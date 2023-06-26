@@ -48,8 +48,8 @@ void LoggerDestroy(logger_t *logger);
 *       Adds the msg to the logger with line number and file name.
 * PARAM:
 *       logger: A pointer to the logger.
-*       filename: The file name.
-*       msg: A pointer to the message (must not be NULL).
+*       filename: The pointer to the file name.
+*       msg: A pointer to the message.
 *       line: The line nimer the error was found.
 * RETURN:
 *       SUCCESS: SUCCESS

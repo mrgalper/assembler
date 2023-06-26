@@ -1,13 +1,13 @@
-#include <stdio.h> /**/
+#include <stdio.h> /* printf */
 #include <stdlib.h> /* malloc */
-#include <string.h> /**/
+#include <string.h> /* strncpy */
 
 #include "logger.h" /* logger API */
 #include "queue.h" /* queue API  */
 
 typedef struct {
-    const char *filename;
-    const char *msg;
+    char *filename;
+    char *msg;
     size_t line;
 } log_entry_t;
 
@@ -74,6 +74,7 @@ logger_status_t AddLog(logger_t *logger, const char *filename,
         return FAIL; 
     }
     strncpy(log_entry->msg, msg, strlen(msg) + 1);
+    log_entry->line = line;
 
     if (QueueEnqueue(logger->log_queue, log_entry) == 0) {
         free((void *)log_entry->filename);
@@ -99,7 +100,8 @@ void PrintAllLogs(logger_t *logger) {
         free((void *)log_entry);
     }
 }
-
+#define LOGGER_TEST
+#ifdef LOGGER_TEST
 int main() {
     logger_t *logger = LoggerInit();
     if (logger == NULL) {
@@ -116,3 +118,4 @@ int main() {
     LoggerDestroy(logger);
     return 0;
 }
+#endif /*LOGGER_TEST*/
