@@ -1,6 +1,7 @@
 #include <stdio.h> /* printf */
 #include <stdlib.h> /* malloc */
 #include <string.h> /* strncpy */
+#include "assert.h" /* assert */
 
 #include "logger.h" /* logger API */
 #include "queue.h" /* queue API  */
@@ -31,9 +32,7 @@ logger_t *LoggerInit(void) {
 }
 
 void LoggerDestroy(logger_t *logger) {
-    if (logger == NULL) {
-        return; 
-    }
+    assert(logger!= NULL);
 
     while (!QueueIsEmpty(logger->log_queue)) {
         log_entry_t *log_entry = (log_entry_t *)QueuePeek(logger->log_queue);
@@ -49,16 +48,18 @@ void LoggerDestroy(logger_t *logger) {
 
 logger_status_t AddLog(logger_t *logger, const char *filename, 
                                                 const char *msg, size_t line) {
-    if (logger == NULL || filename == NULL || msg == NULL) {
-        return FAIL; 
-    }
+    log_entry_t *log_entry = NULL;
 
-    log_entry_t *log_entry = (log_entry_t *)malloc(sizeof(log_entry_t));
+    assert(logger != NULL);
+    assert(filename != NULL);
+    assert(msg != NULL);
+
+    log_entry = (log_entry_t *)malloc(sizeof(log_entry_t));
     if (log_entry == NULL) {
         return FAIL; 
     }
 
-    // Allocate memory for filename and copy the content
+    /* Allocate memory for filename and copy the content */
     log_entry->filename = (char *)malloc(strlen(filename) + 1);
     if (log_entry->filename == NULL) {
         free((void *)log_entry);
@@ -66,7 +67,7 @@ logger_status_t AddLog(logger_t *logger, const char *filename,
     }
     strncpy(log_entry->filename, filename, strlen(filename) + 1);
 
-    // Allocate memory for msg and copy the content
+    /* Allocate memory for msg and copy the content */
     log_entry->msg = (char *)malloc(strlen(msg) + 1);
     if (log_entry->msg == NULL) {
         free((void *)log_entry->filename);
@@ -88,9 +89,7 @@ logger_status_t AddLog(logger_t *logger, const char *filename,
 
 
 void PrintAllLogs(logger_t *logger) {
-    if (logger == NULL) {
-        return;  
-    }
+    assert(logger != NULL);
 
     while (!QueueIsEmpty(logger->log_queue)) {
         log_entry_t *log_entry = (log_entry_t *)QueuePeek(logger->log_queue);
@@ -100,22 +99,3 @@ void PrintAllLogs(logger_t *logger) {
         free((void *)log_entry);
     }
 }
-#define LOGGER_TEST
-#ifdef LOGGER_TEST
-int main() {
-    logger_t *logger = LoggerInit();
-    if (logger == NULL) {
-        printf("Failed to initialize logger.\n");
-        return 1;
-    }
-
-    AddLog(logger, "file1.c", "Error: Invalid input", 10);
-    AddLog(logger, "file2.c", "Warning: Deprecated function", 25);
-    AddLog(logger, "file3.c", "Error: Out of memory", 42);
-
-    PrintAllLogs(logger);
-
-    LoggerDestroy(logger);
-    return 0;
-}
-#endif /*LOGGER_TEST*/

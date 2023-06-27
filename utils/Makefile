@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Werror
+CFLAGS = -Wall -Werror -pedantic -ansi 
 LDFLAGS = -shared
 
 # Directories
@@ -30,7 +30,13 @@ $(BUILD_DIR):
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
 
-# Rule to build a binary
+# Rule to build a binary -- later add it to be dynamic 
 binary: $(SRCS)
-	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o binary $(SRCS)
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o binary $(filter-out test/logger.c,$(SRCS))
+
+# Rule to run the tests
+test: binary
+	./binary
+
+
 

@@ -1,0 +1,105 @@
+/********************************************************************************                 
+*   Orginal Name : symbol_table.h                                               *
+*   Name: Mark Galperin                                                         *
+*   Date 24.6.23                                                                *
+*   Info : This is an api for the symbol table ,                                * 
+*          it will use avl for balanced utilizion of lookup and insertion.      *
+*********************************************************************************/
+
+
+#ifndef __SYMBOL_TABLE_H__
+#define __SYMBOL_TABLE_H__
+
+#include "stddef.h" /* size_t */
+#include "stdint.h" /* int64_t */
+
+typedef struct symbol_table s_table_ty;
+
+typedef enum symbol_table_status {
+    ST_SUCCESS = 0,
+    ST_FAIL_TO_OPEN_FILE = 1,
+    ST_FAILED = 2
+} s_table_status_ty;
+
+/*******************************************
+* DESCRIPTION: 
+*       Create a new symbol table.
+* PARAM:
+*    
+* RETURN:
+*       SUCCESS: Returns a pointer to the created symbol table.
+*       FAIL: NULL no memory.
+* BUGS:
+*       None.
+*******************************************/
+s_table_ty *symbolTableCreate(void);
+
+/*******************************************
+* DESCRIPTION: 
+*       Destroy a symbol table and free its resources.
+* PARAM:
+*       table - A pointer to the symbol table.
+* RETURN:
+*       None.
+* BUGS:
+*       If the provided table pointer is invalid (NULL), the behavior is undefined.
+*******************************************/
+void SymbolTableDestroy(s_table_ty *table);
+
+/*******************************************
+* DESCRIPTION: 
+*       Insert a symbol into the symbol table.
+* PARAM:
+*       table - A pointer to the symbol table.
+*       symbol - The symbol to insert.
+*       line - The line associated with the symbol.
+* RETURN:
+*       Returns SUCCESS if the insertion is successful, FAILED otherwise.
+* BUGS:
+*       If the provided table pointer or symbol pointer is invalid (NULL), the behavior is undefined.
+*******************************************/
+s_table_status_ty SymbolTableInsert(s_table_ty *table, const char *symbol, size_t line);
+
+/*******************************************
+* DESCRIPTION: 
+*       Remove a symbol from the symbol table.
+* PARAM:
+*       table - A pointer to the symbol table.
+*       symbol - The symbol to remove.
+* RETURN:
+*       None.
+* BUGS:
+*       If the provided table pointer or symbol pointer is invalid (NULL), the behavior is undefined.
+*******************************************/
+void SymbolTableRemove(s_table_ty *table, char *symbol);
+
+/*******************************************
+* DESCRIPTION: 
+*       Lookup a symbol in the symbol table and retrieve the associated line number.
+* PARAM:
+*       table - A pointer to the symbol table.
+*       symbol - The symbol to lookup.
+* RETURN:
+*       Returns the line number associated with the symbol if found, or -1 if not found.
+* BUGS:
+*       If the provided table pointer or symbol pointer is invalid (NULL), the behavior is undefined.
+*******************************************/
+int64_t SymbolTableLookup(s_table_ty *table, char *symbol);
+
+/*******************************************
+* DESCRIPTION: 
+*       Print the symbol table into the file in a the following format:
+*       space<symbol>space<line number>'\n' 
+*       if symbol table is empty, it will not open the file.
+*       The file will be created , if it exists it will override the data.
+* PARAM:
+*       table - A pointer to the symbol table.
+*       file - The file name to create.
+*RETURN:
+*     SUCCESS: Returns ST_SUCCESS else fail that represents the error.
+* BUGS:
+*       If the provided table pointer is invalid (NULL), the behavior is undefined.
+*******************************************/
+s_table_status_ty SymbolTableConvertToFile(s_table_ty *table, const char *filename);
+
+#endif /* __SYMBOL_TABLE_H__ */
