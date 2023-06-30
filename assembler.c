@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
         assembler_status_t st = assembler(argv[i]);
         if (st != SUCCESS) {
             printf("Error in file: %s\n", argv[i]);
-            /***************************************************************************break ? */
+            /* break ? */
         } 
         printf("finished assembly for file %s\n", argv[i]);
     }

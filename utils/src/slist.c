@@ -46,11 +46,12 @@ static node_ty *CreateNode(void *data, node_ty *next_node)
 slist_ty *SlistCreate(void)
 {
     slist_ty *slist = malloc(sizeof(struct slist));
-    node_ty *dummy = CreateNode(slist, DEAD_BEEF);
+    node_ty *dummy = NULL;
     if (NULL == slist)
     {
         return (NULL);
     }
+    dummy = CreateNode(slist, DEAD_BEEF);
     if (NULL == dummy)
     {
         free(slist);

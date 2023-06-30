@@ -42,9 +42,9 @@ void SlistDestroy(slist_ty *slist);
 *    DESCRIPTION: Insert the data before the position (varible) 
 *    PARAM: position - is iterator that pointes the desirable location ,
 *    data - is a pointer to the data we want to insert.
-*    RETURN: A pointer iterator to the next data
-*    BUGS:dont try to insert to the last iterator (SlistEnd) or the result is 
-*    undefined. 
+*    RETURN: SUCCESS:A pointer iterator to the next data
+*            FAIL: return TAIL iterator.
+*    BUGS: 
 ******************************************************************************/
 slist_itr_ty SlistInsertBefore(slist_itr_ty position, void *data); 
 
