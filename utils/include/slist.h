@@ -10,17 +10,17 @@
 
 #include <stddef.h> /* size_t */
 
-typedef struct slist slist_ty;
-typedef struct node *slist_itr_ty;
+typedef struct slist slist_t;
+typedef struct node *slist_itr_t;
 
 /* Both function pointers in the next line will recives a param type param that we will
 put in the function ,the implementation of the function is on you ,
 the user should not be concernd with the void *data type */
 
 /* A boolean function that returns 1 if matched else 0 Used in SListFind*/
-typedef int (*is_match_ty)(const void *data, void *params);
+typedef int (*is_match_t)(const void *data, void *params);
 /*Function pointer that is used as argument to SListForEach */
-typedef int (*action_ty)(void *data, void *params);
+typedef int (*action_t)(void *data, void *params);
 
 /*****************************************************************************
 *    DESCRIPTION: Creates a ADT Single link list 
@@ -28,7 +28,7 @@ typedef int (*action_ty)(void *data, void *params);
 *    RETURN: A pointer to the LinkList
 *    BUGS: if malloc fails return Null
 ******************************************************************************/
-slist_ty *SlistCreate(void);
+slist_t *SlistCreate(void);
 
 /*****************************************************************************
 *    DESCRIPTION: Destroy all alocation on the heap 
@@ -36,7 +36,7 @@ slist_ty *SlistCreate(void);
 *    RETURN: none.
 *    BUGS: If the input is of diffrent type or null the result is undefined 
 ******************************************************************************/
-void SlistDestroy(slist_ty *slist); 
+void SlistDestroy(slist_t *slist); 
 
 /*****************************************************************************
 *    DESCRIPTION: Insert the data before the position (varible) 
@@ -46,7 +46,7 @@ void SlistDestroy(slist_ty *slist);
 *            FAIL: return TAIL iterator.
 *    BUGS: 
 ******************************************************************************/
-slist_itr_ty SlistInsertBefore(slist_itr_ty position, void *data); 
+slist_itr_t SlistInsertBefore(slist_itr_t position, void *data); 
 
 /*****************************************************************************
 *    DESCRIPTION: return a pointer to the start of the SLL.
@@ -54,7 +54,7 @@ slist_itr_ty SlistInsertBefore(slist_itr_ty position, void *data);
 *    RETURN: iterate to the start of SLL.
 *    BUGS: If used on uninitialized list or other pointer will cause undefined behaviour.
 ******************************************************************************/
-slist_itr_ty SlistBegin(const slist_ty *slist);
+slist_itr_t SlistBegin(const slist_t *slist);
 
 /*****************************************************************************
 *    DESCRIPTION: return an iterator the end of the SLL, THis is used only as pararmenter 
@@ -63,7 +63,7 @@ slist_itr_ty SlistBegin(const slist_ty *slist);
 *    RETURN: A iterator to the end 
 *    BUGS: none 
 ******************************************************************************/
-slist_itr_ty SlistEnd(const slist_ty *slist);
+slist_itr_t SlistEnd(const slist_t *slist);
 
 /*****************************************************************************
 *    DESCRIPTION: Increase the iterator by one. 
@@ -71,7 +71,7 @@ slist_itr_ty SlistEnd(const slist_ty *slist);
 *    RETURN: A iterator to the next iterator
 *    BUGS:if you're pass is equal to the SlistEnd the result is undefined .
 ******************************************************************************/
-slist_itr_ty SlistNext(const slist_itr_ty iterator);
+slist_itr_t SlistNext(const slist_itr_t iterator);
 
 /*****************************************************************************
 *    DESCRIPTION: removes the current itereitor from the list 
@@ -79,7 +79,7 @@ slist_itr_ty SlistNext(const slist_itr_ty iterator);
 *    RETURN: The next itaretor .
 *    BUGS: if you're pass is equal to the SlistEnd the result is undefined .
 ******************************************************************************/
-slist_itr_ty SlistRemove(slist_itr_ty iterator); 
+slist_itr_t SlistRemove(slist_itr_t iterator); 
 
 /*****************************************************************************
 *    DESCRIPTION:set a data at position iterator (will overate the data). 
@@ -88,7 +88,7 @@ slist_itr_ty SlistRemove(slist_itr_ty iterator);
 *    RETURN: none .
 *    BUGS: if you're pass is equal to the SlistEnd the result is undefined . 
 ******************************************************************************/
-void SlistSetData(slist_itr_ty iterator, void *data);
+void SlistSetData(slist_itr_t iterator, void *data);
 
 /*****************************************************************************
 *    DESCRIPTION:will get the data at position iterator .
@@ -96,7 +96,7 @@ void SlistSetData(slist_itr_ty iterator, void *data);
 *    RETURN: void pointer to the desired data.
 *    BUGS:if used on last iterator the result is undefined .
 ******************************************************************************/
-void *SlistGetData(const slist_itr_ty iterator);
+void *SlistGetData(const slist_itr_t iterator);
 
 /*****************************************************************************
 *    DESCRIPTION: RChack the size of the SLL
@@ -104,15 +104,15 @@ void *SlistGetData(const slist_itr_ty iterator);
 *    RETURN: a positibve number of the size , if return 0 the size is 0.
 *    BUGS: if passed invalid slist the reult is undefined .
 ******************************************************************************/
-size_t SlistSize(const slist_ty *slist);
+size_t SlistSize(const slist_t *slist);
 
 /*****************************************************************************
 *    DESCRIPTION: check if the SLL is empty.
 *    PARAM: A pointer to the SLL.
-*    RETURN: 1 if empty or 0 ,respectivly.
+*    RETURN: 1 if empt or 0 ,respectivly.
 *    BUGS:if the SSLL is NULL the result is undefined .
 ******************************************************************************/
-int SlistIsEmpty(const slist_ty *slist);
+int SlistIsEmpty(const slist_t *slist);
 
 /*****************************************************************************
 *    DESCRIPTION: Will check if to iterators are equall.
@@ -120,8 +120,8 @@ int SlistIsEmpty(const slist_ty *slist);
 *    RETURN: 1 if matched or 0 ,respectivly.
 *    BUGS: if the passed iterators are NULL result is negetive (0).
 ******************************************************************************/
-int SlistIterIsEqual(const slist_itr_ty iterator1, 
-                                            const slist_itr_ty iterator2);
+int SlistIterIsEqual(const slist_itr_t iterator1, 
+                                            const slist_itr_t iterator2);
 
 /*****************************************************************************
 *    DESCRIPTION: for each operation from iterator from till to not included , 
@@ -138,8 +138,8 @@ int SlistIterIsEqual(const slist_itr_ty iterator1,
 *    func will return other then
 *    0 on success will sop on the firts iterator.
 ******************************************************************************/
-int SlistForEach(slist_itr_ty from, slist_itr_ty to, 
-                                            action_ty action_func, void *param);
+int SlistForEach(slist_itr_t from, slist_itr_t to, 
+                                            action_t action_func, void *param);
 
 /*****************************************************************************
 *    DESCRIPTION:  will use the match func between from till to iteratorts 
@@ -154,8 +154,8 @@ int SlistForEach(slist_itr_ty from, slist_itr_ty to,
 *    otherwise return iterator pointed to to .
 *    BUGS: if passed invalid iterators the rsult is undefined .
 ******************************************************************************/
-slist_itr_ty SlistFind(slist_itr_ty from, slist_itr_ty to, 
-                                         is_match_ty match_func, void *param);
+slist_itr_t SlistFind(slist_itr_t from, slist_itr_t to, 
+                                         is_match_t match_func, void *param);
 
 #endif /* __SLINKED_LIST_H__ */
 

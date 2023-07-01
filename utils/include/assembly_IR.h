@@ -124,7 +124,7 @@ assembly_IR_iter_t AssemblyIRGetNextLine(assembly_IR_iter_t iter);
 * DESCRIPTION: compare if two iterators are equal, use it to check 
 *              if you are in the tail of the assembly IR.       
 * PARAM:
-*     iter, iter - iterators to compare.
+*     iter1, iter - iterators to compare.
 * RETURN: 
 *     if matched or 0 ,respectivly.
 *******************************************/

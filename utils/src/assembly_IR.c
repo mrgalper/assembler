@@ -5,13 +5,15 @@
 *   Info : Implemntation of the IR.                                           *
 ******************************************************************************/
 #include "assembly_IR.h" /* aseembly IR api */
+#include "assembler_helper.h" /* macros */
+
 #include <stdio.h> /* printf ,file operations*/
 #include <stdlib.h> /* malloc, free  */
 #include <string.h> /* string operation */
 #include "assert.h" /* assert */
 
 typedef struct assembly_IR_node {
-    char instruction[81]; /* max instruction length + 1 */
+    char instruction[MAX_INSTRUCTION_LENGTH]; 
     struct assembly_IR_node *next;
 } IR_node_t;
 
@@ -20,15 +22,12 @@ struct assembly_IR {
     IR_node_t *tail;
 };
 
-#define DEAD_BEEF (IR_node_t *)0xDEADBEEF 
-
 static void UpdateTail(assembly_IR_t *slist_ir , IR_node_t *new_tail)
 {
     slist_ir->tail = new_tail;  
 }
 
-static IR_node_t *CreateNode(const char *data, 
-                                              IR_node_t *next_node) {
+static IR_node_t *CreateNode(const char *data, IR_node_t *next_node) {
     size_t len = strlen(data) + 1;
     IR_node_t *new_node = malloc(sizeof(IR_node_t));
     if (new_node == NULL) {
@@ -73,7 +72,6 @@ void DestroyAssemblyIR(assembly_IR_t *ir) {
     free(current);
     free(ir);
 }
-
 
 a_ir_status_t AssemblyIRAddInstr(assembly_IR_t *ir, const char *instr) {
     IR_node_t *tail; 

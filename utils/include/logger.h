@@ -28,7 +28,7 @@ typedef enum {
 *       FAIL: NULL (low memory).
 * BUGS:
 ******************************************/
-logger_t *LoggerInit(void);
+logger_t *CreateLogger(void);
 
 /*******************************************
 * DESCRIPTION: 
@@ -40,7 +40,7 @@ logger_t *LoggerInit(void);
 * BUGS:
 *    if passed invalid pointer, result is underfined.
 ******************************************/
-void LoggerDestroy(logger_t *logger);
+void DestroyLogger(logger_t *logger);
 
 
 /*******************************************

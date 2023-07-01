@@ -6,20 +6,19 @@
 *          it will use avl for balanced utilizion of lookup and insertion.      *
 *********************************************************************************/
 
-
 #ifndef __SYMBOL_TABLE_H__
 #define __SYMBOL_TABLE_H__
 
 #include "stddef.h" /* size_t */
 #include "stdint.h" /* int64_t */
 
-typedef struct symbol_table s_table_ty;
+typedef struct symbol_table s_table_t;
 
 typedef enum symbol_table_status {
     ST_SUCCESS = 0,
     ST_FAIL_TO_OPEN_FILE = 1,
     ST_FAILED = 2
-} s_table_status_ty;
+} s_table_status_t;
 
 /*******************************************
 * DESCRIPTION: 
@@ -32,7 +31,7 @@ typedef enum symbol_table_status {
 * BUGS:
 *       None.
 *******************************************/
-s_table_ty *symbolTableCreate(void);
+s_table_t *CreateSymbolTable(void);
 
 /*******************************************
 * DESCRIPTION: 
@@ -44,7 +43,7 @@ s_table_ty *symbolTableCreate(void);
 * BUGS:
 *       If the provided table pointer is invalid (NULL), the behavior is undefined.
 *******************************************/
-void SymbolTableDestroy(s_table_ty *table);
+void DestroySymbolTable(s_table_t *table);
 
 /*******************************************
 * DESCRIPTION: 
@@ -58,7 +57,7 @@ void SymbolTableDestroy(s_table_ty *table);
 * BUGS:
 *       If the provided table pointer or symbol pointer is invalid (NULL), the behavior is undefined.
 *******************************************/
-s_table_status_ty SymbolTableInsert(s_table_ty *table, const char *symbol, size_t line);
+s_table_status_t SymbolTableInsert(s_table_t *table, const char *symbol, size_t line);
 
 /*******************************************
 * DESCRIPTION: 
@@ -71,7 +70,7 @@ s_table_status_ty SymbolTableInsert(s_table_ty *table, const char *symbol, size_
 * BUGS:
 *       If the provided table pointer or symbol pointer is invalid (NULL), the behavior is undefined.
 *******************************************/
-void SymbolTableRemove(s_table_ty *table, char *symbol);
+void SymbolTableRemove(s_table_t *table, char *symbol);
 
 /*******************************************
 * DESCRIPTION: 
@@ -84,7 +83,7 @@ void SymbolTableRemove(s_table_ty *table, char *symbol);
 * BUGS:
 *       If the provided table pointer or symbol pointer is invalid (NULL), the behavior is undefined.
 *******************************************/
-int64_t SymbolTableLookup(s_table_ty *table, char *symbol);
+int64_t SymbolTableLookup(s_table_t *table, char *symbol);
 
 /*******************************************
 * DESCRIPTION: 
@@ -100,6 +99,6 @@ int64_t SymbolTableLookup(s_table_ty *table, char *symbol);
 * BUGS:
 *       If the provided table pointer is invalid (NULL), the behavior is undefined.
 *******************************************/
-s_table_status_ty SymbolTableConvertToFile(s_table_ty *table, const char *filename);
+s_table_status_t SymbolTableConvertToFile(s_table_t *table, const char *filename);
 
 #endif /* __SYMBOL_TABLE_H__ */

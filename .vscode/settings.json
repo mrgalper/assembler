@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "assembler_metadata.h": "c",
+        "macro_table.h": "c"
+    }
+}

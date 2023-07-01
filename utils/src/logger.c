@@ -13,10 +13,10 @@ typedef struct {
 } log_entry_t;
 
 struct logger{
-    queue_ty *log_queue;
+    queue_t*log_queue;
 };
 
-logger_t *LoggerInit(void) {
+logger_t *CreateLogger(void) {
     logger_t *logger = (logger_t *)malloc(sizeof(logger_t));
     if (logger == NULL) {
         return NULL; 
@@ -31,7 +31,7 @@ logger_t *LoggerInit(void) {
     return logger;
 }
 
-void LoggerDestroy(logger_t *logger) {
+void DestroyLogger(logger_t *logger) {
     assert(logger!= NULL);
 
     while (!QueueIsEmpty(logger->log_queue)) {

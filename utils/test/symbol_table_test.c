@@ -4,7 +4,7 @@
 /* gcc test/symbol_table_test.c -L . -lutils -I include */
 void testSymbolTable()
 {
-    s_table_ty *table = symbolTableCreate();
+    s_table_t *table = CreateSymbolTable();
 
     /* Test SymbolTableInsert */
     printf("Testing SymbolTableInsert\n");
@@ -37,9 +37,9 @@ void testSymbolTable()
     printf("Testing SymbolTableConvertToFile\n");
     SymbolTableConvertToFile(table, "symbol_table.txt");
 
-    /* Test SymbolTableDestroy */
-    printf("Testing SymbolTableDestroy\n");
-    SymbolTableDestroy(table);
+    /* Test DestroySymbolTable */
+    printf("Testing DestroySymbolTable\n");
+    DestroySymbolTable(table);
 }
 
 int main()

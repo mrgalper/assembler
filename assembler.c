@@ -1,5 +1,5 @@
-
 #include "assembler.h"
+
 
 int main(int argc, char *argv[]) {
 
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 
 int assembler(const char *filename) {
     
-    metadata_ty *meta = NULL;
+    metadata_t*meta = NULL;
     meta = initializeMetaData(filename);
     if (NULL == meta)
     {

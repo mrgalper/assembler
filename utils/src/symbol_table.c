@@ -14,13 +14,13 @@
 #include <string.h> /* string function*/
 
 struct symbol_table {
-    avl_ty *tree;
+    avl_t *tree;
 };
 
 typedef struct symbol_entry {
     char *symbol;
     size_t line;
-} symbol_entry_ty;
+} symbol_entry_t;
 
 /*******************************************
 * DESCRIPTION: 
@@ -35,8 +35,8 @@ typedef struct symbol_entry {
 *       None.
 *******************************************/
 static int compareEntries(const void *a, const void *b, void * params) {
-    const symbol_entry_ty *entry_a = (const symbol_entry_ty *)a;
-    const symbol_entry_ty *entry_b = (const symbol_entry_ty *)b;
+    const symbol_entry_t *entry_a = (const symbol_entry_t *)a;
+    const symbol_entry_t *entry_b = (const symbol_entry_t *)b;
     (void)params;
     if (entry_a->line < entry_b->line)
         return -1;
@@ -47,8 +47,8 @@ static int compareEntries(const void *a, const void *b, void * params) {
 }
 /* used to find the line of previously mentioned entry of the same symbol*/
 static int FindEntry(void *data, void *params) {
-    symbol_entry_ty *entry = (symbol_entry_ty *)data;
-    symbol_entry_ty *params_entry = (symbol_entry_ty *)params;
+    symbol_entry_t *entry = (symbol_entry_t *)data;
+    symbol_entry_t *params_entry = (symbol_entry_t *)params;
 
     size_t len = strlen(params_entry->symbol) + 1; 
 
@@ -61,12 +61,12 @@ static int FindEntry(void *data, void *params) {
 }
 
 static void freeSymbolEntry(void *entry) {
-    symbol_entry_ty *symbol_entry = (symbol_entry_ty *)entry;
+    symbol_entry_t *symbol_entry = (symbol_entry_t *)entry;
     free(symbol_entry->symbol);
 }
 
 static int WriteEntryToFile(void *data, void *params) {
-    symbol_entry_ty *entry = (symbol_entry_ty *)data;
+    symbol_entry_t *entry = (symbol_entry_t *)data;
     FILE *file = (FILE *)params;
     
     fprintf(file, " %s %lu\n", entry->symbol, entry->line);
@@ -74,8 +74,8 @@ static int WriteEntryToFile(void *data, void *params) {
     return 0;
 }
 
-s_table_ty *symbolTableCreate(void) {
-    s_table_ty *table = (s_table_ty *)malloc(sizeof(s_table_ty));
+s_table_t *CreateSymbolTable(void) {
+    s_table_t *table = (s_table_t *)malloc(sizeof(s_table_t));
     if (table == NULL)
         return NULL;
 
@@ -88,7 +88,7 @@ s_table_ty *symbolTableCreate(void) {
     return table;
 }
 
-void SymbolTableDestroy(s_table_ty *table) {
+void DestroySymbolTable(s_table_t *table) {
     if (table == NULL)
         return;
 
@@ -96,9 +96,9 @@ void SymbolTableDestroy(s_table_ty *table) {
     free(table);
 }
 
-s_table_status_ty SymbolTableInsert(s_table_ty *table, const char *symbol, size_t line) 
+s_table_status_t SymbolTableInsert(s_table_t *table, const char *symbol, size_t line) 
 {
-    symbol_entry_ty entry;
+    symbol_entry_t entry;
     size_t len = strlen(symbol) + 1;
 
     assert(table != NULL);
@@ -116,15 +116,15 @@ s_table_status_ty SymbolTableInsert(s_table_ty *table, const char *symbol, size_
     return ST_SUCCESS;
 }
 
-void SymbolTableRemove(s_table_ty *table, char *symbol) {
+void SymbolTableRemove(s_table_t *table, char *symbol) {
     assert(table != NULL);
     assert(symbol != NULL);
 
     AvlRemove(table->tree, symbol, freeSymbolEntry);
 }
 
-int64_t SymbolTableLookup(s_table_ty *table, char *symbol) {
-    symbol_entry_ty entry;
+int64_t SymbolTableLookup(s_table_t *table, char *symbol) {
+    symbol_entry_t entry;
 
     assert(table != NULL);
     assert(symbol != NULL);
@@ -140,7 +140,7 @@ int64_t SymbolTableLookup(s_table_ty *table, char *symbol) {
 }
 
 
-s_table_status_ty SymbolTableConvertToFile(s_table_ty *table, 
+s_table_status_t SymbolTableConvertToFile(s_table_t *table, 
                                                 const char *filename) {                                            
     FILE *file = NULL;
     assert(table != NULL);

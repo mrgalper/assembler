@@ -3,7 +3,7 @@
 #include "logger.h" /* logger API*/
 
 int main() {
-    logger_t *logger = LoggerInit();
+    logger_t *logger = CreateLogger();
     if (logger == NULL) {
         printf("Failed to initialize logger.\n");
         return 1;
@@ -15,6 +15,6 @@ int main() {
 
     PrintAllLogs(logger);
 
-    LoggerDestroy(logger);
+    DestroyLogger(logger);
     return 0;
 }

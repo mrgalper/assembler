@@ -19,21 +19,21 @@ typedef enum
     INORDER     = 0,
     PREORDER    = 1,
     POST_ORDER  = 2
-}trav_ty;
+}trav_t;
 
 typedef enum
 {
 	AVL_SUCCESS = 0,
 	AVL_FAIL    = 1
-}status_ty;
+}status_t;
 
 typedef enum
 {
 	FALSE = 0,
 	TRUE    = 1
-}bool_ty;
+}bool_t;
 
-typedef struct avl avl_ty;
+typedef struct avl avl_t;
 
 
 
@@ -41,7 +41,7 @@ typedef struct avl avl_ty;
 
 /* 
    A compare function that will be used to determen the order of avl
-   it should return 0 if both have the same priority 
+   it should return 0 if both have the same priorit 
    negetive number if the avl_data is less then user_data
    a positive number if avl_data is bigger
    the param is an option if you want to use in the function 
@@ -79,7 +79,7 @@ typedef void(*free_func)(void *data);
 *   SPACE : O(1)
 *   TIME : O(1)
 ******************************************/
-avl_ty *AvlCreate(cmp_func cmp, void *params);
+avl_t *AvlCreate(cmp_func cmp, void *params);
 
 /*******************************************
 * DESCRIPTION: 
@@ -97,7 +97,7 @@ avl_ty *AvlCreate(cmp_func cmp, void *params);
 *   SPACE : O(1)
 *   TIME : O(N)
 ******************************************/
-void AvlDestroy(avl_ty *avl, free_func ff);
+void AvlDestroy(avl_t *avl, free_func ff);
 
 /*******************************************
 * DESCRIPTION: 
@@ -116,7 +116,7 @@ void AvlDestroy(avl_ty *avl, free_func ff);
 *   SPACE : O(1)
 *   TIME : O(logN)
 ******************************************/
-status_ty AvlInsert(avl_ty *avl, void *data, size_t data_size);
+status_t AvlInsert(avl_t *avl, void *data, size_t data_size);
 
 /*******************************************
 * DESCRIPTION: 
@@ -135,13 +135,13 @@ status_ty AvlInsert(avl_ty *avl, void *data, size_t data_size);
 *   SPACE : O(1)
 *   TIME : O(logN)
 ******************************************/
-void AvlRemove(avl_ty *avl, void *data, free_func ff);
+void AvlRemove(avl_t *avl, void *data, free_func ff);
 
 /*******************************************
 * DESCRIPTION:
 *           calculates the height of the deepest root.
 *           if counts the number of edges till the deepest leef.
-*           if the Tree is empty it will return -1.
+*           if the Tree is empt it will return -1.
 * PARAM:
 *      avl - a valid pointer to avl.
 * RETURN:
@@ -153,7 +153,7 @@ void AvlRemove(avl_ty *avl, void *data, free_func ff);
 *   SPACE : O(1)
 *   TIME : O(1)
 ******************************************/
-long AvlHeight(const avl_ty *avl);
+long AvlHeight(const avl_t *avl);
 	
 /*******************************************
 * DESCRIPTION: 
@@ -169,7 +169,7 @@ long AvlHeight(const avl_ty *avl);
 *   SPACE : O(1)
 *   TIME : O(N)
 ******************************************/
-size_t AvlSize(const avl_ty *avl);
+size_t AvlSize(const avl_t *avl);
 
 /*******************************************
 * DESCRIPTION:
@@ -177,7 +177,7 @@ size_t AvlSize(const avl_ty *avl);
 * PARAM:
 *      avl - a valid pointer to avl.
 * RETURN:
-*       SUCCESS: TRUE if empty , FALSE if not .
+*       SUCCESS: TRUE if empt , FALSE if not .
 *       FAIL: 
 * BUGS:
 *       if passed invalid pointer or NULL the result is undefined.
@@ -185,7 +185,7 @@ size_t AvlSize(const avl_ty *avl);
 *   SPACE : O(1)
 *   TIME : O(1)
 ******************************************/
-bool_ty AvlIsEmpty(const avl_ty *avl);
+bool_t AvlIsEmpty(const avl_t *avl);
 
 /*******************************************
 * DESCRIPTION:
@@ -204,7 +204,7 @@ bool_ty AvlIsEmpty(const avl_ty *avl);
 *   SPACE : O(1)
 *   TIME : O(1)
 ******************************************/
-void *AvlFind(const avl_ty *avl, void *data);
+void *AvlFind(const avl_t *avl, void *data);
 
 /*******************************************
 * DESCRIPTION: 
@@ -226,7 +226,7 @@ void *AvlFind(const avl_ty *avl, void *data);
 *   SPACE : O(1)
 *   TIME : O(N)
 ******************************************/
-status_ty AvlForEach(avl_ty *avl, action_func action,
-						 void *params, trav_ty trav);
+status_t AvlForEach(avl_t *avl, action_func action,
+						 void *params, trav_t trav);
 
 #endif /* __AVLTREE_H__ */

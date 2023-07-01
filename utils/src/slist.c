@@ -4,34 +4,35 @@
 *   Date 23.6.23                                                              *
 *   Info : Defenition of ADT Singel Linked List function                      *
 ******************************************************************************/
+
 #include <stdlib.h> /*malloc, free */
 #include <assert.h> /*assert */
+
+#include "assembler_helper.h" /* defines */
 #include "slist.h" /* NULL, size_t */
 
-typedef struct node node_ty;
+typedef struct node node_t;
 
 struct node
 {
     void *data;
-    node_ty *next;
+    node_t *next;
 };
-
-#define DEAD_BEEF (node_ty *)0xDEADBEEF 
 
 struct slist 
 {
-    node_ty *head;
-    node_ty *tail;
+    node_t *head;
+    node_t *tail;
 };
 
-static void UpdateTail(slist_ty *slist , node_ty *new_tail)
+static void UpdateTail(slist_t *slist , node_t *new_tail)
 {
     slist->tail = new_tail;  
 }
 
-static node_ty *CreateNode(void *data, node_ty *next_node)
+static node_t *CreateNode(void *data, node_t *next_node)
 {
-   node_ty *new_node = malloc(sizeof(node_ty));
+   node_t *new_node = malloc(sizeof(node_t) );
    if (NULL == new_node)
    {
         return (NULL);
@@ -43,10 +44,10 @@ static node_ty *CreateNode(void *data, node_ty *next_node)
    return (new_node);
 }
 
-slist_ty *SlistCreate(void)
+slist_t *SlistCreate(void)
 {
-    slist_ty *slist = malloc(sizeof(struct slist));
-    node_ty *dummy = NULL;
+    slist_t *slist = malloc(sizeof(struct slist));
+    node_t *dummy = NULL;
     if (NULL == slist)
     {
         return (NULL);
@@ -64,14 +65,14 @@ slist_ty *SlistCreate(void)
 }
 
 
-void SlistDestroy(slist_ty *slist)
+void SlistDestroy(slist_t *slist)
 { 
-    node_ty *temp = slist->head;
-    node_ty *free_ptr = temp;
+    node_t *temp = slist->head;
+    node_t *free_ptr = temp;
     
     assert(NULL != slist);
     
-    for ( ;(node_ty *)DEAD_BEEF != temp->next; )
+    for ( ;(node_t *)DEAD_BEEF != temp->next; )
     {
         free_ptr = temp;
         temp = temp->next;
@@ -81,9 +82,9 @@ void SlistDestroy(slist_ty *slist)
     free(slist);
 }
 
-slist_itr_ty SlistInsertBefore(slist_itr_ty position, void *data)
+slist_itr_t SlistInsertBefore(slist_itr_t position, void *data)
 {
-    node_ty *new_node = CreateNode(position->data,position->next);
+    node_t *new_node = CreateNode(position->data,position->next);
     if (NULL == new_node)
     {
         while (DEAD_BEEF != position->next)
@@ -105,30 +106,30 @@ slist_itr_ty SlistInsertBefore(slist_itr_ty position, void *data)
     return (position);
 }
 
-slist_itr_ty SlistBegin(const slist_ty *slist)
+slist_itr_t SlistBegin(const slist_t *slist)
 {
     assert(NULL != slist);
 
     return (slist->head);
 }
 
-slist_itr_ty SlistEnd(const slist_ty *slist)
+slist_itr_t SlistEnd(const slist_t *slist)
 {
     assert(NULL != slist);
     
     return (slist->tail);
 }
 
-slist_itr_ty SlistNext(const slist_itr_ty iterator)
+slist_itr_t SlistNext(const slist_itr_t iterator)
 {
     assert(NULL != iterator);
 
     return (iterator->next);
 }
 
-slist_itr_ty SlistRemove(slist_itr_ty iterator) 
+slist_itr_t SlistRemove(slist_itr_t iterator) 
 {
-    node_ty *temp_node = NULL;
+    node_t *temp_node = NULL;
     assert(NULL != iterator);
     assert(DEAD_BEEF != iterator->next);
 
@@ -145,7 +146,7 @@ slist_itr_ty SlistRemove(slist_itr_ty iterator)
     return (iterator);
 }
 
-void SlistSetData(slist_itr_ty iterator, void *data)
+void SlistSetData(slist_itr_t iterator, void *data)
 {
     assert(NULL != iterator);
     assert(NULL != data);
@@ -154,7 +155,7 @@ void SlistSetData(slist_itr_ty iterator, void *data)
     iterator->data = data;
 }
 
-void *SlistGetData(const slist_itr_ty iterator)
+void *SlistGetData(const slist_itr_t iterator)
 {
     assert(NULL != iterator);
     assert(DEAD_BEEF != iterator->next);
@@ -162,10 +163,10 @@ void *SlistGetData(const slist_itr_ty iterator)
     return (iterator->data);
 }
 
-size_t SlistSize(const slist_ty *slist)
+size_t SlistSize(const slist_t *slist)
 {
     size_t node_count = 0;
-    node_ty *node = SlistBegin(slist);
+    node_t *node = SlistBegin(slist);
     
     assert(NULL != slist);
     
@@ -177,14 +178,14 @@ size_t SlistSize(const slist_ty *slist)
     return (node_count);
 }
 
-int SlistIsEmpty(const slist_ty *slist)
+int SlistIsEmpty(const slist_t *slist)
 {
     assert(NULL != slist);
 
     return (slist->head == slist->tail);
 }
 
-int SlistIterIsEqual(const slist_itr_ty iterator1, const slist_itr_ty iterator2)
+int SlistIterIsEqual(const slist_itr_t iterator1, const slist_itr_t iterator2)
 {
     assert(NULL != iterator1);
     assert(NULL != iterator2);
@@ -192,7 +193,7 @@ int SlistIterIsEqual(const slist_itr_ty iterator1, const slist_itr_ty iterator2)
     return (iterator1 == iterator2);
 }
 
-int SlistForEach(slist_itr_ty from, slist_itr_ty to, action_ty action_func, void *param)
+int SlistForEach(slist_itr_t from, slist_itr_t to, action_t action_func, void *param)
 { 
     int return_value = 0;
 
@@ -208,7 +209,7 @@ int SlistForEach(slist_itr_ty from, slist_itr_ty to, action_ty action_func, void
     return (return_value);
 }
 
-slist_itr_ty SlistFind(slist_itr_ty from, slist_itr_ty to, is_match_ty match_func, void *param)
+slist_itr_t SlistFind(slist_itr_t from, slist_itr_t to, is_match_t match_func, void *param)
 { 
     assert(NULL != from);
     assert(NULL != to);
