@@ -377,6 +377,11 @@ static node_t *AvlCreateNode(void *data, size_t data_size)
         return (NULL);
     }
     new_node->data = (void *)malloc(data_size);
+    if (NULL == new_node->data) 
+    {
+        free(new_node);
+        return (NULL);
+    }
     memcpy(new_node->data, data, data_size);
     new_node->data_size = data_size;
     new_node->child[LEFT] = NULL;
@@ -419,7 +424,8 @@ static void AvlRemoveAllNodes(avl_t *avl, free_func ff)
     }
 
     ff((void *)current_node->data); /* free the internal data */
-    free(current_node);     
+    free(current_node->data); /* free the node data itself */
+    free(current_node);     /* free the node itself*/
 }
 
 static int IsLeaf(node_t *parent)

@@ -95,7 +95,9 @@ void PrintAllLogs(logger_t *logger) {
         log_entry_t *log_entry = (log_entry_t *)QueuePeek(logger->log_queue);
         printf("[File: %s]: Line: %zu Message: %s\n", 
                         log_entry->filename, log_entry->line, log_entry->msg);
-        QueueDequeue(logger->log_queue);
+        free((void *)log_entry->filename);
+        free((void *)log_entry->msg);
         free((void *)log_entry);
+        QueueDequeue(logger->log_queue);
     }
 }
