@@ -46,6 +46,7 @@ static node_t *CreateNode(void *data, node_t *next_node)
 
 slist_t *SlistCreate(void)
 {
+
     slist_t *slist = malloc(sizeof(struct slist));
     node_t *dummy = NULL;
     if (NULL == slist)
