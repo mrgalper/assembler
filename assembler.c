@@ -1,6 +1,9 @@
 #include "assembler.h"
+#include "assembler_metadata.h"
+#include <stdio.h>
 
 
+int assembler(const char *filename);
 int main(int argc, char *argv[]) {
 
     if (argc <= 1) {
@@ -23,13 +26,13 @@ int main(int argc, char *argv[]) {
 
 int assembler(const char *filename) {
     
-    metadata_t*meta = NULL;
-    meta = initializeMetaData(filename);
+    as_metadata_t *meta = NULL;
+    meta = CreateAssemblerMetadata(filename);
     if (NULL == meta)
     {
-        return (FAILED_TO_INITIALIZE_METADATA);
+        return (FAILED_TO_INITIALIZE_META_DATA);
     }
-
+/*
     first_pass_statuts_t st1 = firstPass(meta);
     if (SUCCESS != st1)
     {
@@ -50,8 +53,8 @@ int assembler(const char *filename) {
         CleanUpMetaData(meta);
         return (FAILED_CONVERT_TO_BINARY);
     }
-
-    CleanUpMetaData(meta);
-    return (SUCCESS);
+*/
+    DestroyAssemblerMetadata(meta);
+    return (AS_SUCCESS);
 }
 

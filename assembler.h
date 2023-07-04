@@ -6,7 +6,7 @@
 *************************************************************************/
 
 typedef enum { 
-        SUCCESS = 0,
+        AS_SUCCESS = 0,
         FAILED_TO_INITIALIZE_META_DATA = 1,
         FAILED_FIRST_PASS = 2,
         FAILED_SECOND_PASS = 3,
