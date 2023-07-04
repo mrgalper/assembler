@@ -34,7 +34,14 @@ static void UpdateTail(macro_table_t *slist_mt,  macro_entry_t *new_tail)
 }
 
 static char **CopyData(const char **data, size_t lines) {
-    char **new_data = (char **) malloc(sizeof(char *) * lines);
+    char **new_data = NULL;
+    if (lines == 0) {
+        return (DEAD_BEEF); /* in case of having a tail */
+    }
+    new_data = (char **) malloc(sizeof(char *) * lines);
+    if (NULL == new_data) {
+        return NULL;
+    }
     size_t i = 0;
     for (i = 0; i < lines; i++) {
         size_t len = strlen(data[i]) + 1;
@@ -49,7 +56,7 @@ static char **CopyData(const char **data, size_t lines) {
             return NULL;
         }
         strncpy(new_data[i], data[i], len);
-    }
+    } 
 
     return new_data;
 }
@@ -94,7 +101,7 @@ macro_table_t *CreateMacroTable(void) {
     if (ir == NULL) {
         return NULL;
     }
-    
+       
     dummy = CreateEntry("LAST", NULL, 0, 0, DEAD_BEEF);
     if (NULL == dummy)
     {
@@ -123,10 +130,7 @@ void DestroyMacroTable(macro_table_t *table) {
         free(current);
         current = next;
     }
-    for (i = 0; i < current->def_lines; i++) {
-        free(current->def[i]);
-    }
-    free(current->def);
+    /* since the tail is a dummy node which doesnt have data we dont need to free it */
     free(current);
     free(table);
 }
@@ -171,7 +175,7 @@ macro_status_t MacroTableAddEntry(macro_table_t *table, const char *label,
     if (new_data == NULL) {
         return MACRO_NO_MEM;
     }
-
+    tail = MacroTableGetLastEntry(table);
     new_node = CreateEntry(tail->label, (const char **)tail->def , tail->def_lines, 
                                     tail->line_defined, tail->next);
     if (new_node == NULL) {
@@ -180,10 +184,11 @@ macro_status_t MacroTableAddEntry(macro_table_t *table, const char *label,
         return MACRO_NO_MEM;
     }
 
-    new_node->def_lines = lines_count;
-    new_node->def = new_data;
-    new_node->line_defined = line_defined;
-    new_node->next = new_node;
+    strncpy(tail->label, label, strlen(label) + 1);
+    tail->def_lines = lines_count;
+    tail->def = new_data;
+    tail->line_defined = line_defined;
+    tail->next = new_node;
 
     UpdateTail(table, new_node);
     

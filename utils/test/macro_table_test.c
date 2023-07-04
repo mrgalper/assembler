@@ -40,19 +40,18 @@ int main(void) {
     /* Add macro entries */
     const char *lines1[] = {"line1", "line2", "line3"};
     int val = MacroTableAddEntry(table, "MACRO1", lines1, sizeof(lines1) / sizeof(lines1[0]), 10);
-    printf("Added entry: %d\n", val);
-    // const char *lines2[] = {"line4", "line5"};
-    // MacroTableAddEntry(table, "MACRO2", lines2, sizeof(lines2) / sizeof(lines2[0]), 15);
+     const char *lines2[] = {"line4", "line5"};
+    MacroTableAddEntry(table, "MACRO2", lines2, sizeof(lines2) / sizeof(lines2[0]), 15);
 
-    // const char *lines3[] = {"line6"};
-    // MacroTableAddEntry(table, "MACRO3", lines3, sizeof(lines3) / sizeof(lines3[0]), 20);
+    const char *lines3[] = {"line6"};
+     MacroTableAddEntry(table, "MACRO3", lines3, sizeof(lines3) / sizeof(lines3[0]), 20);
 
     /* Print the macro table */
-   /* printf("Macro Table:\n");
+    printf("Macro Table:\n");
     PrintMacroTable(table);
-*/
+
     /* Find a specific macro entry */
- /*   macro_table_iter_t iter = MacroTableFindEntry(table, "MACRO2");
+    macro_table_iter_t iter = MacroTableFindEntry(table, "MACRO2");
     if (iter != MacroTableGetLastEntry(table)) {
         printf("Found MACRO2:\n");
         const char *label = MacroTableGetEntryLable(iter);
@@ -70,7 +69,7 @@ int main(void) {
     } else {
         printf("MACRO2 not found\n");
     }
-*/
+
     /* Cleanup */
     DestroyMacroTable(table);
 
