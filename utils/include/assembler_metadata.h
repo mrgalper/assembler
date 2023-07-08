@@ -12,6 +12,7 @@
 #include "logger.h" /* API */
 #include "assembly_IR.h" /* API */
 #include "macro_table.h" /* API */
+#include <stdio.h> /* FILE */
 
 typedef struct assembler_metadata_t as_metadata_t; 
 
@@ -76,7 +77,18 @@ s_table_t *GetExternTable(as_metadata_t *md);
 * RETURN:
 *     assembly_IR_t* - Pointer to the assembly IR.
 *************************************************************/
-assembly_IR_t *GetAssemblyIR(as_metadata_t *md);
+assembly_IR_t *GetAssemblyIRData(as_metadata_t *md);
+
+/*******************************************
+* DESCRIPTION: 
+*      Get the assembly intermediate representation from the assembler metadata.
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* 
+* RETURN:
+*     assembly_IR_t* - Pointer to the assembly IR.
+*************************************************************/
+assembly_IR_t *GetAssemblyIRInst(as_metadata_t *md);
 
 /*******************************************
 * DESCRIPTION: 
@@ -110,8 +122,91 @@ logger_t *GetLogger(as_metadata_t *md);
 *     md - Pointer to the assembler metadata.
 * 
 * RETURN:
-*     char* - Pointer to the filename string.
+*     char* - Pointer to the filename string + ".as".
 *************************************************************/
 const char *GetFilename(as_metadata_t *md);
+
+
+/*******************************************
+* DESCRIPTION: 
+*     Get the file descriptor.
+* 
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* 
+* RETURN:
+*     FILE* - Pointer to the file;
+*************************************************************/
+FILE *GetFile(as_metadata_t *md);
+
+/*******************************************
+* DESCRIPTION: 
+*     Get the Instruction counter. default is 0.
+* 
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* 
+* RETURN:
+*     FILE* - IC values
+*************************************************************/
+size_t GetIC(as_metadata_t *md);
+
+/*******************************************
+* DESCRIPTION: 
+*     Get the data counter. default is 0.
+* 
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* 
+* RETURN:
+*     FILE* - DC values
+*************************************************************/
+size_t GetDC(as_metadata_t *md);
+
+/*******************************************
+* DESCRIPTION: 
+*     Get the Program counter. default value start at 100.
+* 
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* 
+* RETURN:
+*     FILE* - DC values
+*************************************************************/
+size_t GetPC(as_metadata_t *md);
+
+/*******************************************
+* DESCRIPTION: 
+*     Set the Instruction counter. default is 0.
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* RETURN:
+*    void 
+*************************************************************/
+void SetPC(as_metadata_t *md, size_t pc);
+
+/*******************************************
+* DESCRIPTION: 
+*     Set the data counter.
+* 
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* 
+* RETURN:
+*     void
+*************************************************************/
+void SetIC(as_metadata_t *md, size_t ic);
+
+/*******************************************
+* DESCRIPTION: 
+*     Set the Instruction counter. 
+* 
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* 
+* RETURN:
+*     void
+*************************************************************/
+void SetDC(as_metadata_t *md, size_t dc);
 
 #endif /*__ASSEMBLER_METADATA_H__*/

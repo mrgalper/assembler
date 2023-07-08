@@ -5,6 +5,9 @@
 *   Info :                                                               *
 *************************************************************************/
 
+#ifndef __ASSEMBLER_H__
+#define __ASSEMBLER_H__
+
 typedef enum { 
         AS_SUCCESS = 0,
         FAILED_TO_INITIALIZE_META_DATA = 1,
@@ -13,3 +16,4 @@ typedef enum {
         FAILED_CONVERT_TO_BINARY = 4  
         }assembler_status_t;
 
+#endif /* __ASSEMBLER_H__ */

@@ -117,7 +117,7 @@ macro_table_iter_t MacroTableGetNextEntry(macro_table_iter_t iter);
 const char *MacroTableGetEntryLable(macro_table_iter_t iter);
 
 /*******************************************
-* DESCRIPTION: Get the value of the entrt lines , use with Number of lines.
+* DESCRIPTION: Get the value of the entry lines , use with Number of lines.
 * 
 * PARAM:
 *     iter - A valid iterator pointing to a macro entry.
@@ -135,7 +135,7 @@ const char **MacroTableGetEntryLines(macro_table_iter_t iter);
 * RETURN:
 *     const char* - The value of the macro entry.
 *******************************************/
-const size_t MacroTableGetEntryNumberOfLines(macro_table_iter_t iter);
+size_t MacroTableGetEntryNumberOfLines(macro_table_iter_t iter);
 
 /*******************************************
 * DESCRIPTION: Get the line the macro is defined in the original file.
@@ -146,7 +146,7 @@ const size_t MacroTableGetEntryNumberOfLines(macro_table_iter_t iter);
 * RETURN:
 *     const char* - The value of the macro entry.
 *******************************************/
-const size_t MacroTableGetEntryLineDefined(macro_table_iter_t iter);
+size_t MacroTableGetEntryLineDefined(macro_table_iter_t iter);
 
 /*******************************************
 * DESCRIPTION: compare if two iterators are equal, use it to check 
@@ -156,7 +156,7 @@ const size_t MacroTableGetEntryLineDefined(macro_table_iter_t iter);
 * RETURN: 
 *     if matched or 0 ,respectivly.
 *******************************************/
-const int MacroTableIterIsEqual(macro_table_iter_t it1, macro_table_iter_t it2);
+int MacroTableIterIsEqual(macro_table_iter_t it1, macro_table_iter_t it2);
 
 
 #endif/* __MACRO_TABLE_H__ */

@@ -35,6 +35,7 @@ static void UpdateTail(macro_table_t *slist_mt,  macro_entry_t *new_tail)
 
 static char **CopyData(const char **data, size_t lines) {
     char **new_data = NULL;
+    size_t i = 0;
     if (lines == 0) {
         return (DEAD_BEEF); /* in case of having a tail */
     }
@@ -42,7 +43,6 @@ static char **CopyData(const char **data, size_t lines) {
     if (NULL == new_data) {
         return NULL;
     }
-    size_t i = 0;
     for (i = 0; i < lines; i++) {
         size_t len = strlen(data[i]) + 1;
         new_data[i] = (char *)malloc(sizeof(char) * len);
@@ -225,20 +225,20 @@ const char **MacroTableGetEntryLines(macro_table_iter_t iter) {
     return (const char **)iter->def;
 }
 
-const size_t MacroTableGetEntryNumberOfLines(macro_table_iter_t iter) {
+size_t MacroTableGetEntryNumberOfLines(macro_table_iter_t iter) {
     assert(iter != NULL);
 
     return iter->def_lines;
 }
 
-const size_t MacroTableGetEntryLineDefined(macro_table_iter_t iter) {
+size_t MacroTableGetEntryLineDefined(macro_table_iter_t iter) {
     assert(iter != NULL);
 
     return iter->def_lines;
 }
 
 
-const int MacroTableIterIsEqual(macro_table_iter_t it1, macro_table_iter_t it2) {
+int MacroTableIterIsEqual(macro_table_iter_t it1, macro_table_iter_t it2) {
     size_t val = memcmp((void *)it1, (void *)it2, sizeof(macro_table_iter_t));
 
     return (val == 0);

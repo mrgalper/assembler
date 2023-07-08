@@ -1,6 +1,23 @@
 {
     "files.associations": {
         "assembler_metadata.h": "c",
-        "macro_table.h": "c"
+        "macro_table.h": "c",
+        "stdio.h": "c",
+        "assembler.h": "c",
+        "deque": "cpp",
+        "exception": "cpp",
+        "filesystem": "cpp",
+        "fstream": "cpp",
+        "functional": "cpp",
+        "istream": "cpp",
+        "locale": "cpp",
+        "memory": "cpp",
+        "new": "cpp",
+        "ostream": "cpp",
+        "string": "cpp",
+        "utility": "cpp",
+        "__string": "cpp",
+        "__locale": "c",
+        "cctype": "c"
     }
 }

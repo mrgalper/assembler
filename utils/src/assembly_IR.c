@@ -10,7 +10,7 @@
 #include <stdio.h> /* printf ,file operations*/
 #include <stdlib.h> /* malloc, free  */
 #include <string.h> /* string operation */
-#include "assert.h" /* assert */
+#include <assert.h> /* assert */
 
 typedef struct assembly_IR_node {
     char instruction[MAX_INSTRUCTION_LENGTH]; 
