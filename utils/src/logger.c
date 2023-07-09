@@ -56,14 +56,14 @@ logger_status_t AddLog(logger_t *logger, const char *filename,
 
     log_entry = (log_entry_t *)malloc(sizeof(log_entry_t));
     if (log_entry == NULL) {
-        return FAIL; 
+        return LG_FAIL; 
     }
 
     /* Allocate memory for filename and copy the content */
     log_entry->filename = (char *)malloc(strlen(filename) + 1);
     if (log_entry->filename == NULL) {
         free((void *)log_entry);
-        return FAIL; 
+        return LG_FAIL; 
     }
     strncpy(log_entry->filename, filename, strlen(filename) + 1);
 
@@ -72,7 +72,7 @@ logger_status_t AddLog(logger_t *logger, const char *filename,
     if (log_entry->msg == NULL) {
         free((void *)log_entry->filename);
         free((void *)log_entry);
-        return FAIL; 
+        return LG_FAIL; 
     }
     strncpy(log_entry->msg, msg, strlen(msg) + 1);
     log_entry->line = line;
@@ -81,10 +81,10 @@ logger_status_t AddLog(logger_t *logger, const char *filename,
         free((void *)log_entry->filename);
         free((void *)log_entry->msg);
         free((void *)log_entry);
-        return FAIL;
+        return LG_FAIL;
     }
 
-    return SUCCESS;
+    return LG_SUCCESS;
 }
 
 

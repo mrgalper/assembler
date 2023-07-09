@@ -1,5 +1,6 @@
 #include "assembler.h"
 #include "assembler_metadata.h"
+#include "first_pass.h"
 #include <stdio.h>
 
 
@@ -32,24 +33,24 @@ int assembler(const char *filename) {
     {
         return (FAILED_TO_INITIALIZE_META_DATA);
     }
-    first_pass_statuts_t st1 = firstPass(meta);
+    first_pass_status_t st1 = firstPass(meta);
     if (AS_SUCCESS != st1)
     {
-        CleanUpMetaData(meta);
+        DestroyAssemblerMetadata(meta);
         return (FAILED_FIRST_PASS);
     }
 /*
     second_pass_statuts_t st2 = secondPass(meta);
     if (AS_SUCCESS != st2)
     {
-        CleanUpMetaData(meta);
+        DestroyAssemblerMetadata(meta);
         return (FAILED_SECOND_PASS);
     }
 
     output_status_t st3 = convertToBinary(meta);
     if (AS_SUCCESS != st3)
     {
-        CleanUpMetaData(meta);
+        DestroyAssemblerMetadata(meta);
         return (FAILED_CONVERT_TO_BINARY);
     }
 */

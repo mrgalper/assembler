@@ -14,9 +14,9 @@
 typedef struct logger logger_t;
 
 typedef enum {
-    SUCCESS = 0,
-    NO_MEMORT = 1,
-    FAIL = 2
+    LG_SUCCESS = 0,
+    LG_NO_MEMORY = 1,
+    LG_FAIL = 2
     }logger_status_t;
 
 /*******************************************

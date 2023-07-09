@@ -11,6 +11,8 @@
 #include <string.h> /* isempty */
 #include <assert.h> /* assert */
 #include <stdio.h> /* printf, File  */
+#include <ctype.h> /* isspace */
+#include <stdlib.h> /* free */
 
 typedef enum line_type {
     LINE_TYPE_COMMENT           = 0,
@@ -19,6 +21,9 @@ typedef enum line_type {
     LINE_TYPE_DATA              = 3,
     LINE_TYPE_MACRO_EXPRESSION  = 4,
     LINE_TYPE_MACRO_DEFENITION  = 5,
+    LINE_TYPE_ENTRY_LABLE       = 6,
+    LINE_TYPE_EXTERN_LABLE      = 7,
+    LINE_TYPE_AMOUNT            = 8
 } line_type_t;
 
 typedef int(*handler)(as_metadata_t *md, char *line);
@@ -26,7 +31,7 @@ typedef int(*handler)(as_metadata_t *md, char *line);
 /******************************************************************************
             This are all the possible line types and they're checkers
 ******************************************************************************/
-static int isEmptyLine(char *line) {
+static int IsEmptyLine(char *line) {
     size_t length = strlen(line);
 
     for (size_t i = 0; i < length; i++) {
@@ -38,15 +43,15 @@ static int isEmptyLine(char *line) {
     return 1;
 }
 
-static int isComment(char *line) {
+static int IsComment(char *line) {
     return line[0] == ';';
 }
 
-static int isMacroDefinition(char *line) {
+static int IsMacroDefinition(char *line) {
     if (strstr(line, "mcro") == NULL) {
-        return false;
+        return 0;
     }
-    return true;
+    return 1;
 }
 
 static char *RemoveSpace(char *line) {
@@ -61,7 +66,7 @@ static char *RemoveSpace(char *line) {
     return line;
 }
 
-static int isMacroExpression(as_metadata_t *md ,char *line) {
+static int IsMacroExpression(as_metadata_t *md ,char *line) {
     char *lable = NULL;
     char *word2 = NULL;
     line = RemoveSpace(line);
@@ -69,8 +74,8 @@ static int isMacroExpression(as_metadata_t *md ,char *line) {
     word2 = strtok(NULL, " \n\t\v\r\f");
     if (word2 == NULL) {
         if (!MacroTableIterIsEqual(
-                    MacroTableFindEntry(md->GetMacroTable(), lable)),
-                    MacroTableGetLastEntry(md->GetMacroTable())) {
+                    MacroTableFindEntry(GetMacroTable(md), lable),
+                    MacroTableGetLastEntry(GetMacroTable(md)))) {
                         return 1;
                     }
     } 
@@ -78,24 +83,42 @@ static int isMacroExpression(as_metadata_t *md ,char *line) {
     return 0;
 }
 
-static int isData(char *line) {
+static int IsData(char *line) {
     if ((strstr(line, ".data")) != NULL || (strstr(line, ".string") != NULL)) {
         return 1;
     }
     return 0;
 }
 
-static GetLineType(as_metadata_t *md, char *line) {
-    if (isEmptyLine(instruction)) {
+static int IsExternLable(char *line) {
+    if ((strstr(line, ".extern")) != NULL) {
+        return 1;
+    }
+    return 0;
+}
+
+static int IsEntryLable(char *line) {
+    if ((strstr(line, ".entry")) != NULL) {
+        return 1;
+    }
+    return 0;
+}
+
+static int GetLineType(as_metadata_t *md, char *instruction) {
+    if (IsEmptyLine(instruction)) {
         return LINE_TYPE_EMPTY;
-    } else if (isComment(instruction)) {
+    } else if (IsComment(instruction)) {
         return LINE_TYPE_COMMENT;
-    } else if (IsMacroDefenition(md, instruction)) {
+    } else if (IsMacroDefinition(instruction)) {
         return LINE_TYPE_MACRO_DEFENITION;
-    }  else if (IsMacroExpansion(instruction)) {
+    }  else if (IsMacroExpression(md, instruction)) {
         return LINE_TYPE_MACRO_EXPRESSION;
     } else if (IsData(instruction)) {
         return LINE_TYPE_DATA;
+    } else if (IsEntryLable(instruction)) {
+        return LINE_TYPE_ENTRY_LABLE;
+    } else if (IsExternLable(instruction)) {
+        return LINE_TYPE_EXTERN_LABLE;
     } else {
         return LINE_TYPE_INSTRUCTION; /* default */
     }
@@ -107,10 +130,10 @@ static GetLineType(as_metadata_t *md, char *line) {
 /* function used to iterate forward */
 static void GetToMacroEnd(as_metadata_t *md, size_t *line_number) {
     char curr_line[80];
-    fgets(curr_line, MAX_INSTRUCTION_LENGTH, md->GetFile());
+    fgets(curr_line, MAX_INSTRUCTION_LENGTH, GetFile(md));
     ++*line_number;
     while (strstr(curr_line, "endmcro") == NULL) {
-        fgets(curr_line, MAX_INSTRUCTION_LENGTH, md->GetFile()); 
+        fgets(curr_line, MAX_INSTRUCTION_LENGTH, GetFile(md)); 
         ++*line_number;
     }
 }
@@ -154,11 +177,11 @@ static int IsOp(char *op) {
     return -1;
 }
 
-static void FreeLines(char **lines, size_t size) {
+static void FreeLines(const char **lines, size_t size) {
     for (size_t i = 0; i < size; i++) {
-        free(lines[i]);
+        free((void *)lines[i]);
     }
-    free(lines);
+    free((void *)lines);
 }
 
 static char **CopyLines(as_metadata_t *md, size_t *line_number, size_t *lines) {
@@ -169,26 +192,26 @@ static char **CopyLines(as_metadata_t *md, size_t *line_number, size_t *lines) {
         return NULL;
     }
     char curr_line[80];
-    fgets(curr_line, MAX_INSTRUCTION_LENGTH, md->GetFile());
+    fgets(curr_line, MAX_INSTRUCTION_LENGTH, GetFile(md));
     ++*line_number;
     for (size_t i = 0; strstr(curr_line, "endmcro") == NULL; i++) {
         if (i == START_AMOUNT) {
             START_AMOUNT *= 2; /* doubles the size each time like vectors*/
             temp = (char **)realloc(lines_copy, sizeof(char *) * START_AMOUNT);
             if (temp == NULL) {
-                FreeLines(lines_copy, lines);
+                FreeLines((const char **)lines_copy, *lines);
                 return NULL;
             }
             lines_copy = temp;
         }
         lines_copy[i] = (char *)malloc(sizeof(char) * MAX_INSTRUCTION_LENGTH);
         if (lines_copy[i] == NULL) {
-            FreeLines(lines_copy, lines);
+            FreeLines((const char **)lines_copy, *lines);
             return NULL;
         }
         memcpy(lines_copy[i], curr_line, strlen(curr_line) + 1);
         ++*lines;
-        fgets(lines_copy[i], MAX_INSTRUCTION_LENGTH, md->GetFile())
+        fgets(lines_copy[i], MAX_INSTRUCTION_LENGTH, GetFile(md));
         ++*line_number; 
     }
     
@@ -199,36 +222,198 @@ static int AddMacro(as_metadata_t *md, const char *lable , char **lines,
                         size_t lines_size, size_t line_defined) {
 
     macro_status_t ret = 
-        MacroTableAddEntry(md->GetMacroTable(), lable, lines, line_size, 
-                                                                line_defined);
+        MacroTableAddEntry(GetMacroTable(md), (const char *)lable, 
+                                 (const char **)lines, lines_size, 
+                                                    line_defined);
     if (ret == MACRO_ALREADY_EXISTS) {
         const char error[200];// MAX_INSTRUCTION_LENGTH + 120 (error message)
-        macro_table_iter_t it = MacroTableFindEntry(md->GetMacroTable(), lable);
+        macro_table_iter_t it = MacroTableFindEntry(GetMacroTable(md), lable);
         size_t prev_defined = MacroTableGetEntryLineDefined(it);
         sprintf("[ERROR] : Macro %s already exists, previously defined in %lu", 
                                                     lable, prev_defined);                                       
-        AddLog(md->GetLogger(), error, lable);
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), error, 
+                                                            line_defined)) {
+            return FS_FAIL;
+        }
 
         return 0;
-    } else if (ret == MACRO_NON_MEM) {
-        return FS_NON_MEMORY;
+    } else if (ret == MACRO_NO_MEM) {
+        return FS_NO_MEMORY;
     } 
     
     return FS_SUCCESS;
 }
-
-static char *GetLable(as_metadata_t *md, char *line) {
+/* DEAD_BEEF used as return value to represent low memory */
+static char *GetLable(as_metadata_t *md, char *line, size_t *line_number) {
     const int MAX_LABLE_LENGTH = 31;
     char *lable = strtok(RemoveSpace(line), " \n\t\v\r\f");
     size_t len = strlen(lable);
-    int is_label = true;
+    size_t pc = 0;
     if (lable[len - 1] == ':') {
-        if (len > MAX_LABEL_LEN) {
-            char error[200];/*  MAX_INSTRUCTION_LENGTH + 1 */
-            AddLog(md->GetLogger(), "[ERROR] : Label too long", lable)
+        if (len > MAX_LABLE_LENGTH) {
+            char error[114];/*  MAX_INSTRUCTION_LENGTH + 30 (error message) */
+            sprintf(error, "[ERROR] : Label too long :%s" , lable);
+            if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
+                         "[ERROR] : Label too long", *line_number)) {
+                return DEAD_BEEF;
+            }
+            return NULL;
+        } else {
+            int is_valid = 1;
+            for (size_t i = 0; i < lable[i] && is_valid; i++) {
+                if (!isupper(lable[i]) && !islower(lable[i])) {
+                    is_valid = 0;
+                }
+            }
+            if (!is_valid) {
+                if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
+                        "[ERROR] : Label can contain only upper and lower char.", 
+                        *line_number)) {
+                    return DEAD_BEEF;
+                }
+                return NULL;
+            }
+            return lable;
         }
     }
+    return (NULL);
 }
+
+static int ConvertIntToOp(as_metadata_t *md, int val, size_t *line_number) {
+    char op[OP_SIZE];
+    memset(op, (int)'0', OP_SIZE);
+    if (val > MAX_INT || val < MIN_INT) {
+        if (LG_SUCCESS!= AddLog(GetLogger(md), GetFilename(md), 
+        "[WARNING] : Value out of range in .data", *line_number)) {
+        val = (val > MAX_INT) ? MAX_INT : MIN_INT;
+        }
+    }
+    /* -2 because the last one is \0 and the first one is singd bit */
+    for (size_t i = 1; i < OP_SIZE - 2; ++i){
+        op[OP_SIZE - i - 1 - 1] = (val & 1) ? '1' : '0';
+        val >>= 1;
+    }
+    /* sign bit */
+    op[0] = val >= 0 ? '0' : '1';
+    op[OP_SIZE - 1] = '\0';
+
+    if (A_IR_SUCCESS != AssemblyIRAddInstr(GetAssemblyIRData(md), op)) {
+        return FS_NO_MEMORY;
+    }
+    SetDC(md, GetDC(md) + 1);
+    SetPC(md, GetPC(md) + 1);
+
+    return FS_SUCCESS;
+}
+
+static int AddDataStatment(as_metadata_t *md ,size_t *line_number) {
+    char *val_s = strtok(NULL, " \n\t\v\r\f");    
+    char *prev_val_s = NULL;
+    int val = 0;
+    if (val_s[0] == ',') {
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
+        "[ERROR] : comma is not allowed on the first value of the .data statment", 
+                                                            *line_number)) {
+            return FS_NO_MEMORY;
+        }
+    }
+    while (val_s != NULL) {
+        val = atoi(val_s);
+        /* atoi return 0 on fail so we need to check that the actual number 
+           is not 0*/
+        if (atoi == 0 && strncmp(val_s, "0", 2) != 0) {
+            if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
+            "[ERROR] : values of .data statment must be integer", 
+                                                            *line_number)) {
+                return FS_NO_MEMORY;
+           }
+        }
+        if (FS_SUCCESS != ConvertIntToOp(md, val, line_number)) {
+            return FS_NO_MEMORY;
+        }
+        prev_val_s = val_s;
+        val_s = strtok(NULL, " \n\t\v\r\f");
+        if (val_s != NULL && ((val_s[0] != ',') || (val_s[0] == '\0' && RemoveSpace(val_s)[0] == ','))) {
+            if (LG_SUCCESS!= AddLog(GetLogger(md), GetFilename(md), 
+            "[ERROR] : A double comma or no comma is not allowed in the .data statment",
+                                                           *line_number)) {
+                return FS_NO_MEMORY;
+            }
+        } 
+    }
+    if (strtok(prev_val_s, ",") != NULL) {
+        if (LG_SUCCESS!= AddLog(GetLogger(md), GetFilename(md), 
+        "[ERROR] : A comma is not allowed in the end of  .data statment",
+                                                           *line_number)) {
+                return FS_NO_MEMORY;
+        }
+    }
+
+    return (FS_SUCCESS);
+}
+
+static int AddStringStatement(as_metadata_t *md ,size_t *line_number) {
+    char *str = strtok(NULL, " \n\t\v\r\f");
+    if (str == NULL) {
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
+        "[ERROR] : An empty string is not allowed in the .string  statment", 
+                                                            *line_number)) {
+            return FS_NO_MEMORY;
+        }
+    }
+    if (strtok(str, " \n\t\v\r\f")b!= NULL) {
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
+        "[ERROR] : Only one string is allowed in the .string statment", 
+                                                            *line_number)) {
+            return FS_NO_MEMORY;
+        }
+    }
+    for (size_t i = 0; str[i] != '\0'; i++) {
+        ConvertIntToOp(md, (int)str[i], line_number);
+    }
+    ConvertIntToOp(md, '\0', line_number);
+
+}
+
+static int IsLabelExists(as_metadata_t *md, const char *lable, 
+                                    size_t *line_number) {
+    char str[114] = {0}; /* MAX_INSTRUCTION_LENGTH + MAX_LABLE_LENGTH + 1 */
+    int line = SymbolTableLookup(GetSymbolTable(md), lable); 
+    if (line != -1) {
+        sprintf(str, 
+        "[ERROR] : double lable definition of %s found, previously defined in line %d as lable", 
+        lable, line);
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), str, 
+                                                                *line_number)) {
+            return FS_NO_MEMORY;
+        }
+        return FS_FAIL;
+    }
+    line = SymbolTableLookup(GetEntryTable(md), lable); 
+    if (line != -1) {
+        sprintf(str, 
+        "[ERROR] : double lable definition of %s found, previously defined in line %d as entry", 
+        lable, line);
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), str, 
+                                                                *line_number)) {
+            return FS_NO_MEMORY;
+        }
+        return FS_FAIL;
+    }
+    line = SymbolTableLookup(GetExternTable(md), lable); 
+    if (line != -1) {
+        sprintf(str, 
+        "[ERROR] : double lable definition of %s found, previously defined in line %d as extern", 
+        lable, line);
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), str, 
+                                                                *line_number)) {
+            return FS_NO_MEMORY;
+        }
+        return FS_FAIL;
+    }
+
+    return FS_SUCCESS;
+}   
 
 /******************************************************************************
             This are all the Handlers 
@@ -236,7 +421,7 @@ static char *GetLable(as_metadata_t *md, char *line) {
 static int handleNothing(as_metadata_t *md, char *line, 
                                                         size_t *line_number) {
     ++*line_number;
-
+    
     return 0;
 }/* in case of a empty line or comment */
 
@@ -248,76 +433,200 @@ static int handleMacroDefinition(as_metadata_t *md, char *line,
     size_t line_defined = *line_number;
     char *macro_command = strtok(RemoveSpace(line), " \n\t\v\r\f");
     char *lable = strtok(NULL, " \n\t\v\r\f");
-    size_t lines = 0;
+    size_t lines_amount = 0;
     int ret = 0;
-    if (IsOp(lines)) {
-        AdDLog(md->GetLogger() , mt->GetFileName() ,
-                        "[ERROR] : macro label cannot be named same as op", *line_number);
-        GetToMacroEnd(md, line, line_number);
+    if (IsOp(lable)) {
+        if (LG_SUCCESS != AddLog(GetLogger(md) , GetFilename(md) ,
+            "[ERROR] : macro label cannot be named same as op", *line_number))
+        {
+            return FS_NO_MEMORY;
+        }
+        GetToMacroEnd(md, line_number);
         return (FS_FAIL);
     }
     if (lable == NULL) {
-        AddLog(md->GetLogger() , mt->GetFileName() ,
-                                "[ERROR] : macro label is empty", *line_number);
-        GetToMacroEnd(md, line, line_number);
+        if (LG_SUCCESS != AddLog(GetLogger(md) , GetFilename(md) ,
+                          "[ERROR] : macro label is empty", *line_number)) {
+            return FS_NO_MEMORY;
+        }
+        GetToMacroEnd(md, line_number);
         return (FS_FAIL);
     }
     /* inital value that represnt lines amount*/
-    lines = CopyLines(md, line_number, &lines);
+    lines = CopyLines(md, line_number, &lines_amount);
     if (lines == NULL) {
-        return (FS_NON_MEMORY);
+        return (FS_NO_MEMORY);
     } else if (lines == 0) {
         /* just a warning not an error */
-        AddLog(md->GetLogger(), mt->GetFileName(),
-                        "[WARNING] : macro definition is empty", *line_number);
-        GetToMacroEnd(md, line, line_number);
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
+                    "[WARNING] : macro definition is empty", *line_number)) {
+            return FS_NO_MEMORY;
+        }
+        GetToMacroEnd(md, line_number);
     } 
-    ret = AddMacro(md, lable, lines, *line_number, line_defined);
-    FreeLines(lines, lines);
+    ret = AddMacro(md, lable, lines, lines_amount, line_defined);
+    FreeLines((const char **)lines, lines_amount);
 
     return (ret);
 }
 
-int handleMacroExpension(as_metadata_t *md, char *line, size_t *line) {
+static int handleMacroExpension(as_metadata_t *md, char *line, size_t *line_number) {
     char *label = strtok(RemoveSpace(line), " \n\t\v\r\f");
-    macro_table_iter_t it = MacroTableFindEntry(md->GetMacroTable(), label);
+    macro_table_iter_t it = MacroTableFindEntry(GetMacroTable(md), label);
     size_t lines = MacroTableGetEntryNumberOfLines(it);
-    char **lines_copy = MacroTableGetEntryLines(it);
+    const char **lines_copy = MacroTableGetEntryLines(it);
     if (lines_copy == NULL) {
-        return (FS_NON_MEMORY);
+        return (FS_NO_MEMORY);
     }
     for (size_t i = 0; i < lines; i++) {
-        line_type_t lt = GetLineType(instruction);
+        line_type_t lt = GetLineType(md, line);
         if (lt == LINE_TYPE_INSTRUCTION || lt == LINE_TYPE_COMMENT) {
-            AddLog(md->GetLogger(), mt->GetFileName(), 
-            "[FATAL_ERROR] : macro expansion or defenition inside a macro expension is not allowed , ",
-             MacroTableGetEntryLineDefined(it));
+            if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
+                "[FATAL_ERROR] : macro expansion or defenition inside a macro expension is not allowed , ",
+                MacroTableGetEntryLineDefined(it))) {
+                return FS_FAIL;
+            }
              
              FreeLines(lines_copy, lines);
              return (FS_FAIL);
         }
-        handler[lt](md, lines_copy[i], line);
+        handler[lt](md, lines_copy[i], line_number);
     }
     FreeLines(lines_copy, lines);
     
     return (FS_SUCCESS);
 }
 
-int handleData(as_metadata_t *md, char *line, size_t *line)
+static int handleData(as_metadata_t *md, char *line, size_t *line_number)
 {
-    char *label = GetLable(line);
-    if (label != NULL) {
-    
+    char *lable = GetLable(md ,line, line_number);
+    size_t len = 0;
+    size_t pc = GetPC(md);
+    int ret = 0;
+    if (lable == DEAD_BEEF) {
+        return (FS_NO_MEMORY);
     }
+    if (lable != NULL) {
+        ret = IsLabelExists(md, lable, line_number);
+        if (ret != FS_SUCCESS) {
+            return ret;
+        } 
+        if (ST_SUCCESS != SymbolTableInsert(GetSymbolTable(md), 
+                                        (const char *)lable, pc)) {
+            return FS_NO_MEMORY;
+        }  
+        lable = strtok(NULL, " \n\t\v\r\f");
+    }
+    if (strncmp(lable, ".data", 6)) {
+        ret = AddDataStatment(md, line_number); 
+    } else {
+        ret = AddStringStatement(md, line_number);
+    }
+    ++*line_number;
+    return (ret);
 }
 
+static int handleExternLable(as_metadata_t *md, char *line, 
+                                                size_t *line_number) {
+    char *lable = NULL;
+    int ret = 0;
+    /* ths intial use of strstr is done inside get lable*/
+    if (NULL != GetLable(md ,line, line_number)) {
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
+            "[WARNING] : lable defintion before extern is meaningless", 
+            *line_number)) {
+            
+            return (FS_NO_MEMORY);
+        }
+        /* if there was a label then we want to pass it and pass the .entry */
+        strstr(NULL, " \n\t\v\r\f"); 
+    }
+    lable = strstr(NULL , " \n\t\v\r\f");
+    if (lable == NULL) {
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
+            "[ERROR] : .extern lable cannot be empty.", 
+            *line_number)) {
+            
+            return (FS_NO_MEMORY);
+        }
+    } else if (strstr(NULL , " \n\t\v\r\f") != NULL) {
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
+            "[ERROR] : .extern lable cannot contain more then 1 lable", 
+            *line_number)) {
+            
+            return FS_NO_MEMORY;
+        }
+
+    }
+    ret = IsLabelExists(md, lable, line_number);
+    if (ret != FS_SUCCESS) {
+        return ret;
+    }
+    if (ST_SUCCESS != SymbolTableInsert(GetExternTable(md), (const char *)lable,    
+                                                                  GetPC(md))) {
+        return FS_NO_MEMORY;
+    } 
+    ++*line_number;
+    return ST_SUCCESS;
+}
+
+static int handleEntryLable(as_metadata_t *md, char *line, 
+                                                size_t *line_number) {
+    char *lable = NULL;
+    int ret = 0;
+    /* ths intial use of strstr is done inside get lable*/
+    if (NULL != GetLable(md ,line, line_number)) {
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
+            "[WARNING] : lable defintion before .entry is meaningless", 
+            *line_number)) {
+            
+            return (FS_NO_MEMORY);
+        }
+        /* if there was a label then we want to pass it and pass the .entry */
+        strstr(NULL, " \n\t\v\r\f"); 
+    }
+    lable = strstr(NULL , " \n\t\v\r\f");
+    if (lable == NULL) {
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
+            "[ERROR] : .entry lable cannot be empty.", 
+            *line_number)) {
+            
+            return (FS_NO_MEMORY);
+        }
+    } else if (strstr(NULL , " \n\t\v\r\f") != NULL) {
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
+            "[ERROR] : .entry lable cannot contain more then 1 lable", 
+            *line_number)) {
+            
+            return FS_NO_MEMORY;
+        }
+
+    }
+    ret = IsLabelExists(md, lable, line_number);
+    if (ret != FS_SUCCESS) {
+        return ret;
+    }
+    if (ST_SUCCESS != SymbolTableInsert(GetEntryTable(md), (const char *)lable,    
+                                                                  GetPC(md))) {
+        return FS_NO_MEMORY;
+    } 
+    ++*line_number;
+    return ST_SUCCESS;
+}
+
+static int handleInstruction(as_metadata_t *md, char *line, 
+                                                size_t *line_number) {
+    
+    char *lable = GetLable(md ,line, line_number);
+    
+}
 /**************************************************************************
  *                          MAIN FUNCTION
 **************************************************************************/
 
 
-first_pass_statis_t firstPass(as_metadata_t *md) {
-    char instruction[MAX_INSTRUCTION_LENGH];
+first_pass_status_t firstPass(as_metadata_t *md) {
+    char instruction[MAX_INSTRUCTION_LENGTH];
     FILE *file;
     size_t line_number = 0;
     const handler[4] = {handleNothing, handleNothing, };
@@ -326,7 +635,7 @@ first_pass_statis_t firstPass(as_metadata_t *md) {
     assert(md != NULL);
 
     file = GetFile(md);
-    while (fgets(instruction, MAX_INSTRUCTION_LENGH, file)!= NULL) {
+    while (fgets(instruction, MAX_INSTRUCTION_LENGTH, file)!= NULL) {
         lt = GetLineType(instruction);
         handler[lt](md, instruction, &line_number);
     }

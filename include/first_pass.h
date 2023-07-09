@@ -9,13 +9,13 @@
 #ifndef __FIRST_PASS_H__
 #define __FIRST_PASS_H__
 
-#include "aassembler_metadata.h" 
+#include "assembler_metadata.h" 
 
 typedef enum first_pass_error {
     FS_SUCCESS = 0,
-    FS_NON_MEMORY = 1,
+    FS_NO_MEMORY = 1,
     FS_FAIL
-}first_pass_statut_t;
+}first_pass_status_t;
 
 
 /***********************************************************************
@@ -26,7 +26,7 @@ typedef enum first_pass_error {
 *   Output: 
 *   Return:
 ***********************************************************************/
-first_pass_statis_t firstPass(as_metadata_t *metadata);
+first_pass_status_t firstPass(as_metadata_t *metadata);
 
 
 #endif /* __FIRST_PASS_H__ */
