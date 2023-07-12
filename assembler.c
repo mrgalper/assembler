@@ -34,9 +34,14 @@ int assembler(const char *filename) {
         return (FAILED_TO_INITIALIZE_META_DATA);
     }
     first_pass_status_t st1 = firstPass(meta);
-    if (AS_SUCCESS != st1)
+    if (FS_SUCCESS != st1)
     {
+        PrintAllLogs(GetLogger(meta));
+        
         DestroyAssemblerMetadata(meta);
+        if (st1 == FS_NO_MEMORY) {
+            return AS_NO_MEMORY;
+        }
         return (FAILED_FIRST_PASS);
     }
 /*

@@ -18,6 +18,9 @@
         "utility": "cpp",
         "__string": "cpp",
         "__locale": "c",
-        "cctype": "c"
+        "cctype": "c",
+        "stdlib.h": "c",
+        "assert.h": "c",
+        "ctype.h": "c"
     }
 }
