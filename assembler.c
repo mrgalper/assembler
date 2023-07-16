@@ -59,6 +59,9 @@ int assembler(const char *filename) {
         return (FAILED_CONVERT_TO_BINARY);
     }
 */
+    AssemblyIRPrintIr(GetAssemblyIRData(meta));
+    printf("\n\n");
+    AssemblyIRPrintIr(GetAssemblyIRInst(meta));
     DestroyAssemblerMetadata(meta);
     return (AS_SUCCESS);
 }

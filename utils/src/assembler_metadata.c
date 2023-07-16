@@ -98,7 +98,7 @@ void DestroyAssemblerMetadata(as_metadata_t *md) {
         DestroyAssemblyIR(md->assembly_IR_data);
     }
     if (md->assembly_IR_instruction != NULL) {
-        DestroyAssemblyIR(md->assembly_IR_data);
+        DestroyAssemblyIR(md->assembly_IR_instruction);
     }
     if (md->macro_table != NULL) {
         DestroyMacroTable(md->macro_table);
@@ -106,6 +106,7 @@ void DestroyAssemblerMetadata(as_metadata_t *md) {
     if (md->logger != NULL) {
         DestroyLogger(md->logger);
     }
+    fclose(md->file);
     free(md->filename);
     free(md);
 }

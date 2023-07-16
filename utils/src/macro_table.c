@@ -243,4 +243,3 @@ int MacroTableIterIsEqual(macro_table_iter_t it1, macro_table_iter_t it2) {
 
     return (val == 0);
 }
-
