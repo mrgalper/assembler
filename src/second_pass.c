@@ -95,6 +95,7 @@ static second_pass_status_t ChangeLableToBin(as_metadata_t *mt,
                     assembly_IR_iter_t instr_it) {
     label_mt_t label_mt;
     char op[MAX_OP_LENGTH] = {0};
+    memset(op, '0', sizeof(op), MAX_OP_LENGTH - 1);
     FindLabel(mt, (char *)label, &label_mt);
     if ( LABEL_DONT_EXIST == label_mt.label) {
         char msg_err[120];
