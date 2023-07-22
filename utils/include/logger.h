@@ -42,6 +42,17 @@ logger_t *CreateLogger(void);
 ******************************************/
 void DestroyLogger(logger_t *logger);
 
+/*******************************************
+* DESCRIPTION: 
+*       check if logger is empty.
+* PARAM:
+*       logger: A pointer to the logger.
+* RETURN:
+*       1 if empty. else 0.
+* BUGS:
+*    if passed invalid pointer, result is underfined.
+******************************************/
+int LoggerIsEmpty(logger_t *logger);
 
 /*******************************************
 * DESCRIPTION: 

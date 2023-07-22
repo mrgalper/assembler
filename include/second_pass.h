@@ -1,32 +1,32 @@
 /*************************************************************************                 
-*   Orginal Name : first_pass.h                                          *
+*   Orginal Name : second_pass.h                                         *
 *   Name: Mark Galperin                                                  *
-*   Date : 7.7.23                                                        *
-*   Info : This header containts all the first pass error and the the    *
+*   Date : 22.7.23                                                       *
+*   Info : This header containts all the second pass error and the the   *
 *   function .                                                           *
 *************************************************************************/
 
-#ifndef __FIRST_PASS_H__
-#define __FIRST_PASS_H__
+#ifndef __SECOND_PASS_H__
+#define __SECOND_PASS_H__
 
 #include "assembler_metadata.h" 
 
-typedef enum first_pass_error {
-    FS_SUCCESS = 0,
-    FS_NO_MEMORY = 1,
-    FS_FAIL
-}first_pass_status_t;
+typedef enum second_pass_error {
+    SC_SUCCESS = 0,
+    SC_NO_MEMORY = 1,
+    SC_FAIL
+}second_pass_status_t;
 
 
 /***********************************************************************
-*   Function: FirstPass
-*   Description: This function is used to perform the first pass of the 
+*   Function: second_pass
+*   Description: This function is used to perform the second pass of the 
 *                assembler.
 *   Input: metadata - the metadata of the assembly.
 *   Output: 
 *   Return:
 ***********************************************************************/
-first_pass_status_t FirstPass(as_metadata_t *metadata);
+second_pass_status_t SecondPass(as_metadata_t *metadata);
 
 
-#endif /* __FIRST_PASS_H__ */
+#endif /* __SECOND_PASS_H__ */

@@ -87,7 +87,9 @@ logger_status_t AddLog(logger_t *logger, const char *filename,
     return LG_SUCCESS;
 }
 
-
+int LoggerIsEmpty(logger_t *logger) {
+    return (QueueIsEmpty(logger->log_queue));
+}
 void PrintAllLogs(logger_t *logger) {
     assert(logger != NULL);
 

@@ -16,4 +16,8 @@
 #define OP_SIZE 13 /* 12 + '\0' */
 #define MAX_INT 4095 /* 2^12 -1     in bits 011111111111*/
 #define MIN_INT -4096 /* 2^12 * -1  in bits 111111111111*/
+/* The first 2 bits are used as ARE*/
+#define MAX_LANE 1023 /* 2^10 - 1*/
+#define MIN_LANE -1024 /* 2^10 * -1*/
+
 #endif /* __ASSEMBLER_HELPER_H__ */

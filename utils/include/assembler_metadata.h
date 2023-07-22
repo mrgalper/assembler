@@ -70,6 +70,25 @@ s_table_t *GetExternTable(as_metadata_t *md);
 
 /*******************************************
 * DESCRIPTION: 
+*     Get the entry output from the assembler metadata.
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* RETURN:
+*     s_table_t* - Pointer to the entry output.
+*************************************************************/
+s_table_t *GetEntryOutput(as_metadata_t *md);
+
+/*******************************************
+* DESCRIPTION: 
+*     Get the extern output from the assembler metadata.
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* RETURN:
+*     s_table_t* - Pointer to the extern output.
+*************************************************************/
+s_table_t *GetExternOutput(as_metadata_t *md);
+/*******************************************
+* DESCRIPTION: 
 *      Get the assembly intermediate representation from the assembler metadata.
 * PARAM:
 *     md - Pointer to the assembler metadata.

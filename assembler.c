@@ -1,8 +1,9 @@
-#include "assembler.h"
-#include "assembler_metadata.h"
-#include "first_pass.h"
-#include <stdio.h>
-
+#include "assembler.h" /* assembler errors */
+#include "assembler_metadata.h" /* Metadata api*/
+#include "first_pass.h" /* first pass API*/
+#include "second_pass.h" /* second pass API*/
+#include <stdio.h> /* printf*/
+#include <stdlib.h> /* getenv */
 
 int assembler(const char *filename);
 
@@ -26,6 +27,13 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+static void PrintPassOutput(as_metadata_t *mt) {
+    printf("Printing data output\n");
+    AssemblyIRPrintIr(GetAssemblyIRData(mt));
+    printf("\n\nPrinting Instructions output\n");
+    AssemblyIRPrintIr(GetAssemblyIRInst(mt));
+}
+
 int assembler(const char *filename) { 
     as_metadata_t *meta = NULL;
     meta = CreateAssemblerMetadata(filename);
@@ -33,25 +41,33 @@ int assembler(const char *filename) {
     {
         return (FAILED_TO_INITIALIZE_META_DATA);
     }
-    first_pass_status_t st1 = firstPass(meta);
+    first_pass_status_t st1 = FirstPass(meta);
     if (FS_SUCCESS != st1)
     {
-        PrintAllLogs(GetLogger(meta));
-        
+        PrintAllLogs(GetLogger(meta)); 
         DestroyAssemblerMetadata(meta);
         if (st1 == FS_NO_MEMORY) {
             return AS_NO_MEMORY;
         }
         return (FAILED_FIRST_PASS);
     }
-/*
-    second_pass_statuts_t st2 = secondPass(meta);
-    if (AS_SUCCESS != st2)
+    if (getenv("ASSEMBLY_FIRST_PASS_IR") != NULL) {
+        PrintPassOutput(meta);
+    }
+
+    second_pass_status_t st2 = SecondPass(meta);
+    if (SC_SUCCESS != st2)
     {
+        PrintAllLogs(GetLogger(meta)); 
         DestroyAssemblerMetadata(meta);
         return (FAILED_SECOND_PASS);
     }
+    if (getenv("ASSEMBLY_SECOND_PASS_IR") != NULL) {
+        PrintPassOutput(meta);
+    }
 
+
+/*
     output_status_t st3 = convertToBinary(meta);
     if (AS_SUCCESS != st3)
     {
@@ -59,10 +75,8 @@ int assembler(const char *filename) {
         return (FAILED_CONVERT_TO_BINARY);
     }
 */
-    PrintAllLogs(GetLogger(meta));
-    AssemblyIRPrintIr(GetAssemblyIRData(meta));
-    printf("\n\n");
-    AssemblyIRPrintIr(GetAssemblyIRInst(meta));
+
+    PrintAllLogs(GetLogger(meta)); 
     DestroyAssemblerMetadata(meta);
     return (AS_SUCCESS);
 }

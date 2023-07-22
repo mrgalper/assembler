@@ -406,7 +406,7 @@ static int ConvertIntToOp(as_metadata_t *md, int val, size_t *line_number) {
         val = (val > MAX_INT) ? MAX_INT : MIN_INT;
         }
     }
-    /* -2 because the last one is \0 and the first one is singd bit */
+    /* -1 because the last one is \0  */
     for (size_t i = 1; i < OP_SIZE - 1; ++i){
         op[OP_SIZE - i - 1 ] = ((val & 1) ? '1' : '0');
         val >>= 1;
@@ -1271,7 +1271,7 @@ static int HandleMacroExpension(as_metadata_t *md, char *line, size_t *line_numb
  *                          MAIN FUNCTION
 **************************************************************************/
 
-first_pass_status_t firstPass(as_metadata_t *md) {
+first_pass_status_t FirstPass(as_metadata_t *md) {
     char instruction[MAX_INSTRUCTION_LENGTH] = {0};
     char instr_cp[MAX_INSTRUCTION_LENGTH] = {0};
     FILE *file;
@@ -1302,6 +1302,10 @@ first_pass_status_t firstPass(as_metadata_t *md) {
         ret = handlers[lt](md, instr_cp, &line_number);
         memset(instruction, 0 , MAX_INSTRUCTION_LENGTH);
         memset(instr_cp, 0 , MAX_INSTRUCTION_LENGTH);
+    }
+
+    if (!LoggerIsEmpty(GetLogger(md)) && ret != FS_NO_MEMORY) {
+        return FS_FAIL;
     }
 
     return (ret);

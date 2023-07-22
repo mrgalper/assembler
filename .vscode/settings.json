@@ -21,6 +21,9 @@
         "cctype": "c",
         "stdlib.h": "c",
         "assert.h": "c",
-        "ctype.h": "c"
+        "ctype.h": "c",
+        "second_pass.h": "c",
+        "assembler_helper.h": "c",
+        "assembly_ir.h": "c"
     }
 }

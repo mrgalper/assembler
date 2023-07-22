@@ -1,12 +1,12 @@
 /******************************************************************************
-*   Orginal Name : slist.c                                                    *
+*   Orginal Name : assembler_metadata.c                                       *
 *   Name: Mark Galperin                                                       *
 *   Date 23.6.23                                                              *
-*   Info : Defenition of ADT Singel Linked List function                      *
+*   Info : This file contains all ds that used in the assembler               *
 ******************************************************************************/
 #include "assembler_metadata.h" /* API*/
 
-#include <stdlib.h> /* malloc, free, getenv */
+#include <stdlib.h> /* malloc, free */
 #include <assert.h> /* assert */
 #include <string.h> /* memset */
 #include <stdio.h> /* printf */
@@ -15,12 +15,17 @@ struct assembler_metadata_t {
     s_table_t *symbol_table;
     s_table_t *entry_table;
     s_table_t *extern_table;
+
+    /* this ds will hold the use of a label in a ir and line of use(PC) */
+    s_table_t *entry_output;
+    s_table_t *extern_output;
     /* since we store the lables in the tables we can split the data and 
     instruction into 2 piece so when we want to convert into file it will be 
     easier and some operation can multithreaded like convert to base 64*/
     assembly_IR_t *assembly_IR_instruction;
     assembly_IR_t *assembly_IR_data;
 
+    
     macro_table_t *macro_table;
     logger_t *logger;
     char *filename;
@@ -28,7 +33,6 @@ struct assembler_metadata_t {
     size_t IC; /* instruction counter */
     size_t DC; /* data counter */
     size_t PC; /* program counter */
-
 };
 
 as_metadata_t *CreateAssemblerMetadata(const char *filename) {
@@ -56,12 +60,11 @@ as_metadata_t *CreateAssemblerMetadata(const char *filename) {
     }
 
 
-    if (getenv("ASSEMBLER_DEBUG") != NULL) {
-        printf("%s\n", md->filename);
-    }
     md->symbol_table = CreateSymbolTable();
     md->entry_table  = CreateSymbolTable();
     md->extern_table = CreateSymbolTable();
+    md->entry_output = CreateSymbolTable();
+    md->extern_output = CreateSymbolTable();
     md->assembly_IR_instruction  = CreateAssemblyIR();
     md->assembly_IR_data  = CreateAssemblyIR();
     md->macro_table  = CreateMacroTable();
@@ -94,6 +97,12 @@ void DestroyAssemblerMetadata(as_metadata_t *md) {
     if (md->extern_table != NULL) {
         DestroySymbolTable(md->extern_table);
     }
+    if (md->extern_output != NULL) {
+        DestroySymbolTable(md->extern_output);
+    }
+    if (md->entry_output != NULL) {
+        DestroySymbolTable(md->entry_output);
+    }
     if (md->assembly_IR_data != NULL) {
         DestroyAssemblyIR(md->assembly_IR_data);
     }
@@ -121,6 +130,15 @@ s_table_t *GetEntryTable(as_metadata_t *md) {
 
 s_table_t *GetExternTable(as_metadata_t *md) {
     return md->extern_table;
+}
+
+
+s_table_t *GetEntryOutput(as_metadata_t *md) {
+    return md->entry_output;
+}
+
+s_table_t *GetExternOutput(as_metadata_t *md) {
+    return md->extern_output;
 }
 
 assembly_IR_t *GetAssemblyIRData(as_metadata_t *md) {
