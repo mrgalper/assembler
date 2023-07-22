@@ -15,6 +15,8 @@
 #include <stdlib.h> /* free */
 
 #define MAX_LABEL_LENGTH  31
+#define MAX_ADDRESSING_OPTIONS  3
+#define OP_AMOUNT  16
 typedef enum line_type {
     LINE_TYPE_COMMENT           = 0,
     LINE_TYPE_EMPTY             = 1,
@@ -51,10 +53,11 @@ opcode_amount = 16
 }opcode_t;
 
 typedef enum operand_type{
+    OP_DEFAULT   = -2,
     OP_NOT_EXIST = -1,
-    OP_IMMIDIATE = 0,
-    OP_DIRECT    = 1,
-    OP_REGISTER  = 2
+    OP_IMMIDIATE =  0,
+    OP_DIRECT    =  1,
+    OP_REGISTER  =  2,
 }operand_type_t;
 
 typedef enum op_scope{
@@ -77,7 +80,7 @@ typedef enum op_type{
 }register_type_t;
 
 typedef union  {
-    char *label;
+    char label[MAX_LABEL_LENGTH];
     register_type_t reg;
     int constant; 
 }operand_val_t;
@@ -98,7 +101,7 @@ typedef struct op {
     op_scope_t ARE;
     operand_type_t operand[OP_TOTAL];
     operand_val_t operand_val[OP_TOTAL];
-    int8_t has_label : 2;
+    int8_t label_len;
     int8_t has_src : 2;
     int8_t has_dest : 2;
 }op_t; 
@@ -140,8 +143,9 @@ static char *RemoveSpace(char *line) {
 static int IsMacroExpression(as_metadata_t *md ,char *line) {
     char *label = NULL;
     char *word2 = NULL;
-    line = RemoveSpace(line);
-    label = strtok(line, " \n\t\v\r\f");
+    char copy_line[MAX_INSTRUCTION_LENGTH];
+    strncpy(copy_line, line, MAX_INSTRUCTION_LENGTH);
+    label = strtok(RemoveSpace(copy_line), " \n\t\v\r\f");
     word2 = strtok(NULL, " \n\t\v\r\f");
     if (word2 == NULL) {
         if (!MacroTableIterIsEqual(
@@ -241,7 +245,7 @@ static opcode_t GetOp(char *op) {
     size_t len = strlen(op) + 1;
     if (strncmp("mov", op, len) == 0) {
         return op_mov;
-    } else if (strncmp("ncmp", op, len) == 0) {
+    } else if (strncmp("cmp", op, len) == 0) {
         return op_cmp;
     } else if (strncmp("add", op, len) == 0) {
         return op_add;
@@ -346,8 +350,11 @@ static int AddMacro(as_metadata_t *md, const char *label , char **lines,
 
 static int IsLabel(char *line) {
     int is_valid = 1;
+    if (!isupper(line[0]) && !islower(line[0])) {
+        return 0; /* label has to start with latter*/
+    }
     for (size_t i = 0; line[i] && is_valid; i++) {
-        if (!isupper(line[i]) && !islower(line[i])) {
+        if (!isupper(line[i]) && !islower(line[i]) && !isdigit(line[i])) {
             is_valid = 0;
         }
     }
@@ -358,26 +365,26 @@ static int IsLabel(char *line) {
 
 /* DEAD_BEEF used as return value to represent low memory */
 static char *GetLabel(as_metadata_t *md, char *line, size_t *line_number) {
-    char *label = strtok(RemoveSpace(line), " \n\t\v\r\f");
+    size_t og_len = strlen(line);
+    char *label = strtok(line, ":");
     size_t len = 0;
     if (label == NULL) {
         return NULL;
     }
     len = strlen(label);
-    if (label[len - 1] == ':') {
-        label[len - 1] = '\0'; /* remove the : as it is not part of the label */
+    if (len != og_len) {
         if (len > MAX_LABEL_LENGTH) {
             char error[114];/*  MAX_INSTRUCTION_LENGTH + 30 (error message) */
             snprintf(error, 114,"[ERROR] : Label too long :%s" , label);
             if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
-                         "[ERROR] : Label too long", *line_number)) {
+                             "[ERROR] : Label too long", *line_number)) {
                 return DEAD_BEEF;
             }
             return NULL;
         } else {
             if (!IsLabel(label)) {
                 if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
-                        "[ERROR] : Label can contain only upper and lower char.", 
+                            "[ERROR] : Label can contain only upper and lower char.", 
                         *line_number)) {
                     return DEAD_BEEF;
                 }
@@ -392,7 +399,7 @@ static char *GetLabel(as_metadata_t *md, char *line, size_t *line_number) {
 
 static int ConvertIntToOp(as_metadata_t *md, int val, size_t *line_number) {
     char op[OP_SIZE];
-    memset(op, (int)'0', OP_SIZE);
+    memset(op, (int)'0', OP_SIZE - 1);
     if (val > MAX_INT || val < MIN_INT) {
         if (LG_SUCCESS!= AddLog(GetLogger(md), GetFilename(md), 
         "[WARNING] : Value out of range in .data", *line_number)) {
@@ -400,8 +407,8 @@ static int ConvertIntToOp(as_metadata_t *md, int val, size_t *line_number) {
         }
     }
     /* -2 because the last one is \0 and the first one is singd bit */
-    for (size_t i = 1; i < OP_SIZE - 2; ++i){
-        op[OP_SIZE - i - 1 - 1] = (val & 1) ? '1' : '0';
+    for (size_t i = 1; i < OP_SIZE - 1; ++i){
+        op[OP_SIZE - i - 1 ] = ((val & 1) ? '1' : '0');
         val >>= 1;
     }
     /* sign bit */
@@ -421,9 +428,12 @@ static int IsVal(char *line, int *val) {
     char* end_ptr;
     long int lval = strtol(line, &end_ptr, 10);
 
-    *val = lval > MAX_INT ? MAX_INT : lval < MIN_INT ? MIN_INT : lval;
-    if (end_ptr == line || *end_ptr != '\0') {
+    *val = lval;
+    if (end_ptr == line || (!isspace(*end_ptr) && *end_ptr != '\0')) {
         return 0;
+    }
+    if (RemoveSpace(end_ptr)[0] != '\0') {
+        return -1;
     }
     if (*val == 0 && line[0] != '0' && line[1] != '\0') {
         return 0;
@@ -433,9 +443,14 @@ static int IsVal(char *line, int *val) {
 }
 
 static int AddDataStatment(as_metadata_t *md ,size_t *line_number, char *vals) {
-    char *val_s = strtok(RemoveSpace(vals), ",");
+    char *val_s = NULL;
+    char copy_vals[MAX_INSTRUCTION_LENGTH] = {0};
     char *prev_val_s = NULL;
     int val = 0;
+    int len = 0;
+    int ret = 0;
+    strncpy(copy_vals, vals, MAX_INSTRUCTION_LENGTH);
+    val_s = strtok(RemoveSpace(vals), ",");
     if (val_s[0] == ',') {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
         "[ERROR] : comma is not allowed on the first value of the .data statment", 
@@ -444,28 +459,39 @@ static int AddDataStatment(as_metadata_t *md ,size_t *line_number, char *vals) {
         }
     }
     while (val_s != NULL) {
-        val_s = RemoveSpace(val_s);
-        if (!IsVal(val_s, &val)) {
+        ret = IsVal(val_s, &val);
+        if (ret == 0) {
             if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
-            "[ERROR] : values of .data statment must be integer", 
+                    "[ERROR] : values of .data statment must be integer", 
                                                             *line_number)) {
                 return FS_NO_MEMORY;
            }
+        }else if (ret == -1) {
+            if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
+                "[ERROR] : values of .data statment cannot contain char after the val", 
+                                                            *line_number)) {
+                return FS_NO_MEMORY;
+           }
+
         }
         if (FS_SUCCESS != ConvertIntToOp(md, val, line_number)) {
             return FS_NO_MEMORY;
         }
         prev_val_s = val_s;
         val_s = strtok(NULL, ",");
-        if (val_s != NULL && ((val_s[0] != ',') || (val_s[0] == '\0' && RemoveSpace(val_s)[0] == ','))) {
-            if (LG_SUCCESS!= AddLog(GetLogger(md), GetFilename(md), 
-            "[ERROR] : A double comma or no comma is not allowed in the .data statment",
-                                                           *line_number)) {
-                return FS_NO_MEMORY;
-            }
-        } 
+        if (val_s != NULL) {
+            val_s = RemoveSpace(val_s);
+            if (val_s[0] == ',') {
+                if (LG_SUCCESS!= AddLog(GetLogger(md), GetFilename(md), 
+                "[ERROR] : A double comma or no comma is not allowed in the .data statment",
+                                                               *line_number)) {
+                    return FS_NO_MEMORY;
+                }
+            } 
+        }
     }
-    if (strtok(prev_val_s, ",") != NULL) {
+    len = (size_t)prev_val_s + strlen(prev_val_s) - (size_t)vals;
+    if (RemoveSpace(copy_vals + len)[0] != '\0') {
         if (LG_SUCCESS!= AddLog(GetLogger(md), GetFilename(md), 
         "[ERROR] : A comma is not allowed in the end of  .data statment",
                                                            *line_number)) {
@@ -476,8 +502,8 @@ static int AddDataStatment(as_metadata_t *md ,size_t *line_number, char *vals) {
     return (FS_SUCCESS);
 }
 
-static int AddStringStatement(as_metadata_t *md ,size_t *line_number) {
-    char *str = strtok(NULL, " \n\t\v\r\f,");
+static int AddStringStatement(as_metadata_t *md ,size_t *line_number, char *line) {
+    char *str = strtok(RemoveSpace(line), " \n\t\v\r\f,");
     if (str == NULL) {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
         "[ERROR] : An empty string is not allowed in the .string  statment", 
@@ -485,7 +511,7 @@ static int AddStringStatement(as_metadata_t *md ,size_t *line_number) {
             return FS_NO_MEMORY;
         }
     }
-    if (strtok(str, " \n\t\v\r\f,") != NULL) {
+    if (strtok(NULL, " \n\t\v\r\f,") != NULL) {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
         "[ERROR] : Only one string is allowed in the .string statment", 
                                                             *line_number)) {
@@ -542,6 +568,9 @@ static int IsLabelExists(as_metadata_t *md, char *label,
 
 static void ResetOpToDefault(op_t *op) {
     memset(op, 0, sizeof(*op));
+    memset(op->opcode, '0', (OP_SIZE - 1) * sizeof(char));
+    memset(op->op_first, '0', (OP_SIZE - 1) * sizeof(char));
+    memset(op->op_second, '0', (OP_SIZE - 1) * sizeof(char));
     op->op_type = op_undefined;
     op->operand[OP_SRC] = OP_NOT_EXIST;
     op->operand[OP_DEST] = OP_NOT_EXIST;
@@ -560,7 +589,7 @@ static first_pass_status_t FillLabel(as_metadata_t *md, char *line,
                                         (const char *)label, GetPC(md))) {
                 return FS_NO_MEMORY;
             }  
-            op->has_label = 1;
+            op->label_len = strlen(label);
         }   
     }
     
@@ -582,7 +611,7 @@ static void GetOperand(char *line , op_t *op, operands_t type) {
         op->operand_val[type].reg = register_lut[(int)(line[2] - '0')];
         op->operand[type] = OP_REGISTER;
     }else if (IsLabel(line)) {
-        op->operand_val[type].label = line; 
+        memcpy(op->operand_val[type].label, line, strlen(line) + 1); 
         op->operand[type] = OP_DIRECT;
     }else if (IsVal(line, &val)) {
         op->operand_val[type].constant = val; 
@@ -638,7 +667,9 @@ static int GetOperands(as_metadata_t *md,
     len = (size_t)operandend - (size_t)operand;
     memcpy(operands[OP_SRC], operand, len);
     operand = RemoveSpace(operandend);
-
+    if (*operand == '\0') {
+        return 1; /* 1 operand*/
+    }
     if (*operand != ',') {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
             "[ERROR] : between 2 operand must be a comma",
@@ -646,10 +677,9 @@ static int GetOperands(as_metadata_t *md,
             return -2 /* no memory*/;
         }
         return -1; /* general fail*/
-    }else if (*operand == '\0') {
-        return 1; /* 1 operand*/
     }
-    operand = RemoveSpace(operandend + 1);
+
+    operand = RemoveSpace(operand + 1);
     if (*operand == ',') {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
             "[ERROR] : Cannot have consicutive commas between operator",
@@ -674,22 +704,138 @@ static int GetOperands(as_metadata_t *md,
         return -1; /* general fail*/
     }
 
-    printf("operands1 :%s\n", operands[0]);
-    printf("operands2 :%s\n", operands[1]);
     return 2;
+}
+
+static void VerifyOpAmount(as_metadata_t *md, size_t *line_number, 
+                                    op_t *op, int op_amount ,
+                                    first_pass_status_t *ret) {
+    static int op_amount_lut[opcode_amount] = 
+                    {2, 2, 2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0, 0};
+    static char *op_str[opcode_amount] =  {
+         "mov", "cmp", "add", "sub", "not", "clr","lea" ,"inc" ,"dec" ,"jmp" ,
+         "bne", "red", "prn", "jsr", "rts", "stop"};
+    char msg_err[200] = {0}; 
+
+    if (op_amount != op_amount_lut[op->op_type]) {
+        snprintf(msg_err, 200, 
+                 "[ERROR] : for op %s Expected amount %d but got actually %d\n", 
+                    op_str[op->op_type] ,op_amount, op_amount_lut[op->op_type]);
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), msg_err, 
+                                                        *line_number)) {
+            *ret = FS_NO_MEMORY;
+            return;
+        }
+        if (*ret == FS_NO_MEMORY) {
+            return;
+        }
+        *ret = FS_FAIL;
+        return;
+    }
+}
+
+static void CheckAddressingAndEmitError(as_metadata_t *md, size_t *line_number, 
+                                    op_t *op, operands_t type ,
+                                    first_pass_status_t *ret, 
+                                    operand_type_t lut[OP_AMOUNT][MAX_ADDRESSING_OPTIONS]) {
+
+    char msg_err[200] = {0};
+    static char *op_str[opcode_amount] =  {
+     "mov", "cmp", "add", "sub", "not", "clr","lea" ,"inc" ,"dec" ,"jmp" ,
+     "bne", "red", "prn", "jsr", "rts", "stop"};
+    operand_type_t dest_type = op->operand[type];
+    opcode_t opcode = op->op_type;
+    if (dest_type != lut[opcode][0] &&
+        dest_type != lut[opcode][1] &&
+        dest_type != lut[opcode][2]) {
+        snprintf(msg_err, 200, 
+        "[ERROR] : op %s got unsupported addressing type" , 
+        op_str[op->op_type]);
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
+            msg_err, 
+                                                        *line_number)) {
+            *ret = FS_NO_MEMORY;
+            return;
+        }
+        if (*ret == FS_NO_MEMORY) {
+            return;
+        }
+        *ret = FS_FAIL;
+        return;
+    }
+
+}
+
+static void VerifyOpAddresing(as_metadata_t *md, size_t *line_number, 
+                                    op_t *op, int op_amount ,
+                                    first_pass_status_t *ret) {
+    static operand_type_t 
+                op_src_addressing_lut[OP_AMOUNT][MAX_ADDRESSING_OPTIONS] = 
+    {
+/*op_mov */{OP_IMMIDIATE, OP_DIRECT, OP_REGISTER},
+/*op_cmp */{OP_IMMIDIATE, OP_DIRECT, OP_REGISTER},
+/*op_add */{OP_IMMIDIATE, OP_DIRECT, OP_REGISTER},
+/*op_sub */{OP_IMMIDIATE, OP_DIRECT, OP_REGISTER},
+/*op_not */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_clr */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_lea */{OP_DIRECT, OP_DEFAULT, OP_DEFAULT},
+/*op_inc */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_dec */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_jmp */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_bne */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_red */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_prn */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_jsr */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_rts */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_stop*/{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT}};
+
+    static operand_type_t 
+                op_dest_addressing_lut[OP_AMOUNT][MAX_ADDRESSING_OPTIONS] = 
+    {
+/*op_mov */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_cmp */{OP_IMMIDIATE, OP_DIRECT, OP_REGISTER},
+/*op_add */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_sub */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_not */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_clr */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_lea */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_inc */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_dec */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_jmp */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_bne */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_red */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_prn */{OP_IMMIDIATE, OP_DIRECT, OP_REGISTER},
+/*op_jsr */{OP_DEFAULT, OP_DIRECT, OP_REGISTER},
+/*op_rts */{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT},
+/*op_stop*/{OP_DEFAULT, OP_DEFAULT, OP_DEFAULT}};
+
+    if (op_amount == 1) {
+        CheckAddressingAndEmitError(md, line_number, op, OP_SRC, ret, 
+                                                    op_dest_addressing_lut);
+    }else if (op_amount == 2) {
+        CheckAddressingAndEmitError(md, line_number, op, OP_SRC, ret, 
+                                                op_src_addressing_lut);
+        CheckAddressingAndEmitError(md, line_number, op, OP_DEST, ret, 
+                                                op_dest_addressing_lut);
+
+    }
 }
 
 
 static first_pass_status_t FillOp(as_metadata_t *md, char *line,
                                 size_t *line_number, op_t *op) {
-    char *section = strtok(RemoveSpace(line), " \n\t\v\r\f"); 
+    /* if label len doesnt exist the values is 0 so it will not add nothing*/
+    char *section = NULL;
     char operands[OP_TOTAL][MAX_INSTRUCTION_LENGTH];
+    if (op->label_len != 0) {
+        section = strtok(RemoveSpace(line + op->label_len + 1 /* ':' */), 
+                                                               " \n\t\v\r\f");
+    } else {
+        section = strtok(RemoveSpace(line), " \n\t\v\r\f");
+    }
     first_pass_status_t ret = FS_SUCCESS;
     char err_msg[200];
     int op_amount = 0;
-    if (op->has_label) {
-        section = strtok(NULL, " \n\t\v\r\f"); 
-    }
     op->op_type = GetOp(section);
     if (op->op_type == op_undefined) {
         snprintf(err_msg, sizeof(err_msg),"[ERROR] : %s is Undefined Op.", 
@@ -708,12 +854,14 @@ static first_pass_status_t FillOp(as_metadata_t *md, char *line,
     } else if (op_amount == -2) {
         ret = FS_NO_MEMORY;
     } else if (op_amount > 0) {
+        op->has_dest = 1;
         GetOperand(operands[OP_SRC], op, OP_SRC); 
         if (op->operand[OP_SRC] == OP_NOT_EXIST) {
             ret = EmitOpTypeError(md, 
                         operands[OP_DEST], line_number, op, OP_DEST);
         }
         if (op_amount == 2) {
+            op->has_src = 1;
             GetOperand(operands[OP_DEST], op, OP_DEST); 
             if (op->operand[OP_DEST] == OP_NOT_EXIST) {
                 ret = EmitOpTypeError(md, 
@@ -721,22 +869,26 @@ static first_pass_status_t FillOp(as_metadata_t *md, char *line,
             }
         }
     }
-
+    VerifyOpAmount(md, line_number, op, op_amount ,&ret);
+    VerifyOpAddresing(md, line_number, op, op_amount ,&ret);
+    
     return ret;
 }
 /* is responsible to filll the extra instruction that 
     represnt the data of the p[]
     actual - is where the values are supposed to go
     stored - is where the value is stored
+    offset_val (used only in label) - is a value 1 - 2 that tells what is the 
+    offset from cmd the is gonna be used to fill back the ARE in second pass
 */
-static first_pass_status_t FillInstructionOp(as_metadata_t *md, char *line,
+static first_pass_status_t FillInstructionOp(as_metadata_t *md,
                                 size_t *line_number, op_t *op, 
                                 operands_t stored, operands_t actual,
-                                char *cmd)
+                                char *cmd, int offset_val)
 {
     static char *register_str[register_amount] =    
             {"000", "001", "010", "011", "100", "101", "110", "111"}; 
-    static int offset[OP_TOTAL] = {0/* src */, 7/* dest*/};
+    static int offset[OP_TOTAL] = {2/* src */, 7/* dest*/};
     operand_type_t type = op->operand[stored];
     if (type == OP_IMMIDIATE) {
         int val = op->operand_val[stored].constant;
@@ -748,49 +900,58 @@ static first_pass_status_t FillInstructionOp(as_metadata_t *md, char *line,
             val = (val > MAX_INT) ? MAX_INT : MIN_INT;
         }
         /* -2 because the last one is \0 and the first one is singd bit */
-        for (size_t i = 1; i < OP_SIZE - 2; ++i){
-            cmd[OP_SIZE - i - 1 - 1] = (val & 1) ? '1' : '0';
+        if (val < 0) {
+            cmd[0] = '1';
+        }
+        for (size_t i = 1; i < OP_SIZE - 1; ++i){
+            cmd[OP_SIZE - i - 1] = ((val & 1) ? '1' : '0');
             val >>= 1;
         }
 
         return FS_SUCCESS;
     } else if (type == OP_REGISTER) {
-        memcpy(cmd + offset[actual], register_str[op->operand_val->reg], sizeof(char) * 3);
+        memcpy(cmd + offset[actual], 
+                register_str[op->operand_val[stored].reg], sizeof(char) * 3);
         FillOperandARE(cmd, OP_ABSOLUTE); 
 
         return FS_SUCCESS;
     }else { /* lable*/
+        /* 2 and 3 are used since 0 and 1 are binary numbers used to verify 
+            it is not a label*/
+        char offset_str[OP_TOTAL] = {'2' , '3'}; 
         char *label = op->operand_val[stored].label;
-        memcpy(cmd, label, sizeof(label) + 1);
+        cmd[0] = offset_str[offset_val];
+        memcpy(cmd + 1 , label, sizeof(label) + 1);
 
         return FS_SUCCESS;
     }
 
 }
 
-static first_pass_status_t FillTwoOp(as_metadata_t *md, char *line,
+static first_pass_status_t FillTwoOp(as_metadata_t *md, 
                                 size_t *line_number, op_t *op) {
     first_pass_status_t ret = FS_SUCCESS;
     if (op->operand[OP_SRC] == OP_REGISTER && 
                                     op->operand[OP_DEST] == OP_REGISTER) {
-        ret = FillInstructionOp(md, line,line_number, op,
-                                                OP_DEST, OP_DEST, op->op_first);
+        /* offset is set to -1 since both oeprands are registers*/
+        ret = FillInstructionOp(md ,line_number, op,
+                                        OP_DEST, OP_DEST, op->op_first, -1);
         if (ret == FS_NO_MEMORY) {
             return ret;
         } 
-        ret = FillInstructionOp(md, line,line_number, op,
-                                                OP_SRC, OP_SRC, op->op_first);
+        ret = FillInstructionOp(md, line_number, op,
+                                            OP_SRC, OP_SRC, op->op_first, -1);
         if (ret == FS_NO_MEMORY) {
             return ret;
         } 
     } else {
-        ret = FillInstructionOp(md, line,line_number, op,
-                                                OP_SRC, OP_SRC, op->op_first);
+        ret = FillInstructionOp(md, line_number, op,
+                                            OP_SRC, OP_SRC, op->op_first, 0);
         if (ret == FS_NO_MEMORY) {
             return ret;
         } 
-        ret = FillInstructionOp(md, line,line_number, op,
-                                                OP_DEST, OP_DEST, op->op_second);
+        ret = FillInstructionOp(md, line_number, op,
+                                            OP_DEST, OP_DEST, op->op_second, 1);
         if (ret == FS_NO_MEMORY) {
             return ret;
         } 
@@ -799,40 +960,22 @@ static first_pass_status_t FillTwoOp(as_metadata_t *md, char *line,
     return ret;
 }
 
-static first_pass_status_t AddOpToIR(as_metadata_t *md, char *line,
+static first_pass_status_t AddOpToIR(as_metadata_t *md,
                                 size_t *line_number, op_t *op) {
-    static int operand_amount[opcode_amount] = 
-                {2, 2, 2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0, 0};
-    int op_amount = (int)op->has_dest + op->has_src;
     first_pass_status_t ret = FS_SUCCESS;
-    if (op_amount != operand_amount[op->op_type]) {
-    static char *op_str[opcode_amount] =  {
-         "mov", "cmp", "add", "sub", "not", "clr","lea" ,"inc" ,"dec" ,"jmp" ,
-         "bne", "red", "prn", "jsr", "rts", "stop"};
-        char err_msg[200] = {0};
-        snprintf(err_msg, 200, 
-        "[ERROR] : for op %s expected %d operands but got %d.", 
-        op_str[op->op_type], operand_amount[op->op_type], op_amount);
-        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
-                                                    err_msg, *line_number)) {
-            return FS_NO_MEMORY;
-        }       
-    }
+    int op_amount = (int)op->has_dest + (int)op->has_src;
     FillOpBin(op);
+    
     if (op_amount == 1) {
         /* since we store always the first op in src here we will pass that we 
         store the val in src but want to put it in dest*/
         FillOperandBin(op, OP_SRC, OP_DEST); 
-        ret = FillInstructionOp(md, line,line_number, op,
-                                                OP_SRC, OP_DEST, op->op_first);
+        ret = FillInstructionOp(md, line_number, op,
+                                        OP_SRC, OP_DEST, op->op_first, 0);
     } else if (op_amount == 2) {
-        if (op->operand[OP_SRC] == OP_REGISTER && 
-                        op->operand[OP_DEST] == OP_REGISTER) {
-            
-        }
         FillOperandBin(op, OP_SRC, OP_SRC); 
         FillOperandBin(op, OP_DEST,OP_DEST); 
-        FillTwoOp(md, line, line_number, op);
+        FillTwoOp(md, line_number, op);
     }
     if (A_IR_SUCCESS != AssemblyIRAddInstr(GetAssemblyIRInst(md), op->opcode)) {
         return FS_NO_MEMORY;
@@ -864,7 +1007,10 @@ static first_pass_status_t AddOpToIR(as_metadata_t *md, char *line,
 ******************************************************************************/
 static int HandleNothing(as_metadata_t *md, char *line, 
                                                         size_t *line_number) {
-    
+    UNUSED(md);
+    UNUSED(line);
+    UNUSED(line_number);
+
     return 0;
 }/* in case of a empty line or comment */
 
@@ -873,11 +1019,11 @@ static int HandleMacroDefinition(as_metadata_t *md, char *line,
                                                         size_t *line_number) {
     char **lines;
     /* first strtok will return mcro second will return macro name*/
-    char *macro_command = strtok(RemoveSpace(line), " \n\t\v\r\f");
-    
+    char *macro_command = strtok(RemoveSpace(line), " \n\t\v\r\f"); 
     char *label = strtok(NULL, " \n\t\v\r\f\0");
     size_t lines_amount = 0;
     int ret = 0;
+    UNUSED(macro_command);/* we used inly to get the mcro defention */
     if (label == NULL) {
         if (LG_SUCCESS != AddLog(GetLogger(md) , GetFilename(md) ,
                           "[ERROR] : macro label is empty", *line_number)) {
@@ -916,10 +1062,11 @@ static int HandleMacroDefinition(as_metadata_t *md, char *line,
 static int HandleData(as_metadata_t *md, char *line, size_t *line_number)
 {
     char copy_line[MAX_INSTRUCTION_LENGTH];
-    char *label = GetLabel(md ,line, line_number);
-    size_t len = 0;
+    char *label = NULL; 
     size_t pc = GetPC(md);
     int ret = 0;
+    strncpy(copy_line, line, MAX_INSTRUCTION_LENGTH);
+    label = GetLabel(md ,line, line_number);
     if (label == DEAD_BEEF) {
         return (FS_NO_MEMORY);
     }
@@ -932,42 +1079,59 @@ static int HandleData(as_metadata_t *md, char *line, size_t *line_number)
                                         (const char *)label, pc)) {
             return FS_NO_MEMORY;
         }  
-        label = strtok(NULL, " \n\t\v\r\f");
+        label = strtok(RemoveSpace(line + strlen(label) + 1), " \n\t\v\r\f");
+    } else {
+        label = strtok(RemoveSpace(line), " \n\t\v\r\f");
     }
-    strncpy(copy_line, line, MAX_INSTRUCTION_LENGTH);
-    if (strncmp(label, ".data", 6)) {
-        int offset = (size_t)label - (size_t)line + 6;/* 6 = .data + 1*/
+    if (strncmp(label, ".data", 6) == 0) {
+        int offset = (size_t)label + strlen(label) - (size_t)line;
         ret = AddDataStatment(md, line_number, copy_line + offset); 
     } else {
-        ret = AddStringStatement(md, line_number);
+        int offset = (size_t)label + strlen(label) - (size_t)line;
+        ret = AddStringStatement(md, line_number, copy_line + offset);
     }
     return (ret);
 }
 
 static int HandleExternLabel(as_metadata_t *md, char *line, 
                                                 size_t *line_number) {
-    char *label = NULL;
+    char *section = NULL;
     int ret = 0;
-    /* ths intial use of strtok is done inside get label*/
-    if (NULL != GetLabel(md ,line, line_number)) {
+    int len = 0;
+    int line_len = strlen(line);
+    char line_copy[MAX_INSTRUCTION_LENGTH] = {0};
+    strncpy(line_copy, line, MAX_INSTRUCTION_LENGTH);
+    char *label = GetLabel(md ,line_copy, line_number);
+    if (DEAD_BEEF == label) {
+        return FS_NO_MEMORY;
+    }else if (NULL != label) {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
-            "[WARNING] : label defintion before extern is meaningless", 
+            "[WARNING] : label defintion before .extern is meaningless", 
             *line_number)) {
             
             return (FS_NO_MEMORY);
         }
-        /* if there was a label then we want to pass it and pass the .entry */
-        strtok(NULL, " \n\t\v\r\f"); 
+        /* label: .extern */ 
+        section = strtok(RemoveSpace(line + strlen(label) + 1/* : */), " \n\t\v\r\f"); 
+        len = (size_t)section + strlen(section) - (size_t)line + 1;
+    } else {
+        /* .extern */ 
+        section = strtok(RemoveSpace(line) , " \n\t\v\r\f");
+        len = strlen(section) + 1;
     }
-    label = strtok(NULL , " \n\t\v\r\f");
-    if (label == NULL) {
+    /* section jumps to lable*/
+    section = strtok(RemoveSpace(line + len), " \n\t\v\r\f" ); 
+    len = (size_t)section + strlen(section) - (size_t)line + 1;
+    if (section == NULL) {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
             "[ERROR] : .extern label cannot be empty.", 
             *line_number)) {
             
             return (FS_NO_MEMORY);
         }
-    } else if (strtok(NULL , " \n\t\v\r\f") != NULL) {
+    }
+    if (len <= line_len &&
+                    strtok(RemoveSpace(line + len) , " \n\t\v\r\f") != NULL) {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
             "[ERROR] : .extern label cannot contain more then 1 label", 
             *line_number)) {
@@ -976,11 +1140,11 @@ static int HandleExternLabel(as_metadata_t *md, char *line,
         }
 
     }
-    ret = IsLabelExists(md, label, line_number);
+    ret = IsLabelExists(md, section, line_number);
     if (ret != FS_SUCCESS) {
         return ret;
     }
-    if (ST_SUCCESS != SymbolTableInsert(GetExternTable(md), (const char *)label,    
+    if (ST_SUCCESS != SymbolTableInsert(GetExternTable(md), (const char *)section,    
                                                                   GetPC(md))) {
         return FS_NO_MEMORY;
     } 
@@ -989,28 +1153,43 @@ static int HandleExternLabel(as_metadata_t *md, char *line,
 
 static int HandleEntryLabel(as_metadata_t *md, char *line, 
                                                 size_t *line_number) {
-    char *label = NULL;
+    char *section = NULL;
     int ret = 0;
-    /* ths intial use of strtok is done inside get label*/
-    if (NULL != GetLabel(md ,line, line_number)) {
+    int len = 0;
+    int line_len = strlen(line);
+    char line_copy[MAX_INSTRUCTION_LENGTH] = {0};
+    strncpy(line_copy, line, MAX_INSTRUCTION_LENGTH);
+    char *label = GetLabel(md ,line_copy, line_number);
+    if (DEAD_BEEF == label) {
+        return FS_NO_MEMORY;
+    }else if (NULL != label) {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
             "[WARNING] : label defintion before .entry is meaningless", 
             *line_number)) {
             
             return (FS_NO_MEMORY);
         }
-        /* if there was a label then we want to pass it and pass the .entry */
-        strtok(NULL, " \n\t\v\r\f"); 
+        /* label: .entry */ 
+        section = strtok(RemoveSpace(line + strlen(label) + 1/* : */), " \n\t\v\r\f"); 
+        len = (size_t)section + strlen(section) - (size_t)line + 1;
+    } else {
+        /* .entry */ 
+        section = strtok(RemoveSpace(line) , " \n\t\v\r\f");
+        len = strlen(section) + 1;
     }
-    label = strtok(NULL , " \n\t\v\r\f");
-    if (label == NULL) {
+    /* section jumps to lable*/
+    section = strtok(RemoveSpace(line + len), " \n\t\v\r\f" ); 
+    len = (size_t)section + strlen(section) - (size_t)line + 1;
+    if (section == NULL) {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
             "[ERROR] : .entry label cannot be empty.", 
             *line_number)) {
             
             return (FS_NO_MEMORY);
         }
-    } else if (strtok(NULL , " \n\t\v\r\f") != NULL) {
+    }
+    if (len <= line_len &&
+                    strtok(RemoveSpace(line + len) , " \n\t\v\r\f") != NULL) {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
             "[ERROR] : .entry label cannot contain more then 1 label", 
             *line_number)) {
@@ -1019,11 +1198,11 @@ static int HandleEntryLabel(as_metadata_t *md, char *line,
         }
 
     }
-    ret = IsLabelExists(md, label, line_number);
+    ret = IsLabelExists(md, section, line_number);
     if (ret != FS_SUCCESS) {
         return ret;
     }
-    if (ST_SUCCESS != SymbolTableInsert(GetEntryTable(md), (const char *)label,    
+    if (ST_SUCCESS != SymbolTableInsert(GetEntryTable(md), (const char *)section,    
                                                                   GetPC(md))) {
         return FS_NO_MEMORY;
     } 
@@ -1040,16 +1219,16 @@ static int HandleInstruction(as_metadata_t *md, char *line,
 
     ResetOpToDefault(&op);
     ret = FillLabel(md, line, line_number, &op); 
-    if (ret != ST_SUCCESS) {
+    if (ret != FS_SUCCESS) {
         return ret;
     }
     
     ret = FillOp(md, instr_cp, line_number, &op);
-    if (ret != ST_SUCCESS) {
+    if (ret != FS_SUCCESS) {
         return ret;
     }
-    ret = AddOpToIR(md, line,line_number, &op);
-    if (ret != ST_SUCCESS) {
+    ret = AddOpToIR(md, line_number, &op);
+    if (ret != FS_SUCCESS) {
         return ret;
     }
     return ret;
@@ -1072,8 +1251,8 @@ static int HandleMacroExpension(as_metadata_t *md, char *line, size_t *line_numb
     for (size_t i = 0; i < lines; i++) {
         char line_copy[MAX_INSTRUCTION_LENGTH];
         strncpy(line_copy, macro_lines[i], MAX_INSTRUCTION_LENGTH);
-        line_type_t lt = GetLineType(md, line);
-        if (lt == LINE_TYPE_INSTRUCTION || lt == LINE_TYPE_COMMENT) {
+        line_type_t lt = GetLineType(md, line_copy);
+        if (lt == LINE_TYPE_MACRO_DEFINITION || lt == LINE_TYPE_MACRO_EXPRESSION) {
             if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
                 "[FATAL_ERROR] : macro expansion or defenition inside a macro expension is not allowed , ",
                 MacroTableGetEntryLineDefined(it))) {
@@ -1082,6 +1261,7 @@ static int HandleMacroExpension(as_metadata_t *md, char *line, size_t *line_numb
              
              return (FS_FAIL);
         }
+        strncpy(line_copy, macro_lines[i], MAX_INSTRUCTION_LENGTH);
         handlers[lt](md, line_copy, line_number);
     }
     
@@ -1110,7 +1290,7 @@ first_pass_status_t firstPass(as_metadata_t *md) {
     assert(md != NULL);
     file = GetFile(md);
     first_pass_status_t ret = FS_SUCCESS;
-    while ((fgets(instruction, MAX_INSTRUCTION_LENGTH, file) != NULL) && 
+    while ((fgets(instruction, MAX_INSTRUCTION_LENGTH - 1 , file) != NULL) && 
                                                          ret != FS_NO_MEMORY) { 
         /* since we use strtok in the GetLineType we ruin the instruction
            so we pass a acopy of the orginal before it ruined */
@@ -1120,6 +1300,8 @@ first_pass_status_t firstPass(as_metadata_t *md) {
             line_number += 1;
         }
         ret = handlers[lt](md, instr_cp, &line_number);
+        memset(instruction, 0 , MAX_INSTRUCTION_LENGTH);
+        memset(instr_cp, 0 , MAX_INSTRUCTION_LENGTH);
     }
 
     return (ret);
