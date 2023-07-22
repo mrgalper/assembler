@@ -95,7 +95,7 @@ static second_pass_status_t ChangeLableToBin(as_metadata_t *mt,
                     assembly_IR_iter_t instr_it) {
     label_mt_t label_mt;
     char op[MAX_OP_LENGTH] = {0};
-    memset(op, '0', sizeof(op), MAX_OP_LENGTH - 1);
+    memset(op, '0',  MAX_OP_LENGTH - 1);
     FindLabel(mt, (char *)label, &label_mt);
     if ( LABEL_DONT_EXIST == label_mt.label) {
         char msg_err[120];
@@ -123,7 +123,7 @@ second_pass_status_t SecondPass(as_metadata_t *meta) {
     while (!AssemblyIRIterIsEqual(it , tail) && ret != SC_NO_MEMORY) {
         const char *instr = AssemblyIRGetInstr(it);
         if (*instr == '3' || *instr == '2') {
-            if (*instr == '3') {
+            if (*instr == '2') {
                 ret = ChangeLableToBin(meta, instr + 1 /* skip 2/3*/, it, prev_it);
             } else {
                 ret = ChangeLableToBin(meta, instr + 1 /* skip 2/3*/, it, prev_prev_it);
