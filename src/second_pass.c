@@ -19,27 +19,29 @@ typedef enum label_type {
     LABEL_SYMBOL    = 2
 }label_t;
 
+typedef struct status_and_meta {
+    as_metadata_t *metadata;
+    second_pass_status_t ret;
+}status_and_meta_t;
+
 typedef struct label_mt {
     label_t label;
     int64_t line;
 }label_mt_t;
 
 static void FindLabel(as_metadata_t *md, char *label, label_mt_t *label_mt) {
-    int line = SymbolTableLookup(GetSymbolTable(md), label); 
-    if (line != -1) {
-        label_mt->label = LABEL_SYMBOL;    
-        label_mt->line = line;
-        return;
-    }
-    line = SymbolTableLookup(GetEntryTable(md), label); 
-    if (line != -1) {
-        label_mt->label = LABEL_ENTRY;
-        label_mt->line = line;
-        return;
-    }
+    int line = 0;
+    /* first check if it is external no need to check if internal because 
+    it is supposed to be in the Symbol if not we will check later */ 
     line = SymbolTableLookup(GetExternTable(md), label); 
     if (line != -1) {
         label_mt->label = LABEL_EXTERN;
+        label_mt->line = line;
+        return;
+    }
+    line = SymbolTableLookup(GetSymbolTable(md), label); 
+    if (line != -1) {
+        label_mt->label = LABEL_SYMBOL;    
         label_mt->line = line;
         return;
     }
@@ -67,7 +69,7 @@ static second_pass_status_t ConvertLineToOp(as_metadata_t *md, int val,
         snprintf(err_msg, 120, 
         "[WARNING] : The label %s was defined in line %d which is to big/small for a 10 bit\n",
         label, val);
-        if (LG_SUCCESS!= AddLog(GetLogger(md), GetFilename(md), err_msg, -1)) {
+        if (LG_SUCCESS!= AddLog(GetWarningLogger(md), GetFilename(md), err_msg, -1)) {
             val = (val > MAX_LANE) ? MAX_LANE : MIN_LANE;
 
             return SC_NO_MEMORY;
@@ -81,18 +83,21 @@ static second_pass_status_t ConvertLineToOp(as_metadata_t *md, int val,
     return SC_SUCCESS;
 }
 
-static void UpdateInstrOpARE(assembly_IR_iter_t it, label_t lb) {
-    const char *instr = AssemblyIRGetInstr(it);
-    char cp_instr[MAX_INSTRUCTION_LENGTH] = {0};
-    strncpy(cp_instr, instr, MAX_INSTRUCTION_LENGTH);
+static second_pass_status_t FillEntryExternTable(as_metadata_t *mt, 
+            label_mt_t label_mt, const char *label , assembly_IR_iter_t it)
+{
+    if (label_mt.label == LABEL_EXTERN) {
+        if (ST_SUCCESS != SymbolTableInsert(GetExternOutput(mt), label, 
+                                                        AssemblyIRGetPc(it))) {
+            return SC_NO_MEMORY;
+        }
+    } 
 
-    FillARE(cp_instr, lb);
-    AssemblyIRChangeInstruction(it, cp_instr);
+    return SC_SUCCESS;
 }
 
 static second_pass_status_t ChangeLableToBin(as_metadata_t *mt, 
-                    const char *label, assembly_IR_iter_t it,
-                    assembly_IR_iter_t instr_it) {
+                    const char *label, assembly_IR_iter_t it) {
     label_mt_t label_mt;
     char op[MAX_OP_LENGTH] = {0};
     memset(op, '0',  MAX_OP_LENGTH - 1);
@@ -100,43 +105,79 @@ static second_pass_status_t ChangeLableToBin(as_metadata_t *mt,
     if ( LABEL_DONT_EXIST == label_mt.label) {
         char msg_err[120];
         snprintf(msg_err, 120, 
-        "[ERROR]: The following label was used %s but not defined", label);
-        if (LG_SUCCESS != AddLog(GetLogger(mt), GetFilename(mt), msg_err , -1)) {
+        "[ERROR]: label was used %s but not defined", label);
+        if (LG_SUCCESS != AddLog(GetLogger(mt), GetFilename(mt), msg_err , 
+            AssemblyIRGetPc(it))) {
             return SC_NO_MEMORY;
         }
     }
+    if (SC_SUCCESS != FillEntryExternTable(mt, label_mt, label, it)) {
+        return SC_NO_MEMORY;
+    }
     FillARE(op, label_mt.label);
-    ConvertLineToOp(mt, label_mt.line, op, label);
+    if ( LABEL_EXTERN != label_mt.label) /* extern labels stay 0 since they are unkown*/
+    {
+        ConvertLineToOp(mt, label_mt.line, op, label);
+    }
     AssemblyIRChangeInstruction(it, op);
-    UpdateInstrOpARE(instr_it, label_mt.label);
 
     return SC_SUCCESS;
 }
 
+static int ActionFunc(for_each_data_t *data, void *param) {
+    status_and_meta_t *st_and_mt = (status_and_meta_t *)param;
+    as_metadata_t *meta = st_and_mt->metadata;
+    if (-1 == SymbolTableLookup(GetSymbolTable(meta), data->label)) {
+        char msg_err[256] = {0};
+        snprintf(msg_err, sizeof(msg_err),
+         "[ERROR]: symbol %s defined as entry but no entry was found.", data->label);
+        if (LG_SUCCESS != AddLog(GetLogger(meta), GetFilename(meta),msg_err, 
+                                                                data->line)) {
+            st_and_mt->ret =  SC_NO_MEMORY;
+        }
+        return SC_FAIL;
+    } else {
+        if (ST_FAILED == 
+                SymbolTableInsert(GetEntryOutput(meta), data->label, data->line)) {
+            st_and_mt->ret = SC_NO_MEMORY;
+
+            return SC_FAIL;
+        }
+    }
+    
+    return SC_SUCCESS;
+}
+
+static second_pass_status_t HandleEntryOutput(as_metadata_t *meta) {
+    status_and_meta_t st_and_mt;
+    st_and_mt.metadata = meta;
+    st_and_mt.ret = SC_SUCCESS;
+    SymbolTableForEach(GetEntryTable(meta), ActionFunc, (void *)&st_and_mt);
+    
+    return st_and_mt.ret;
+}
+
 second_pass_status_t SecondPass(as_metadata_t *meta) {
-    assembly_IR_iter_t prev_prev_it; 
-    assembly_IR_iter_t prev_it =  AssemblyIRGetFirstLine(GetAssemblyIRInst(meta));
-    assembly_IR_iter_t it =  AssemblyIRGetNextLine(prev_it);
+    assembly_IR_iter_t it =  AssemblyIRGetFirstLine(GetAssemblyIRInst(meta));
     assembly_IR_iter_t tail = AssemblyIRGetTail(GetAssemblyIRInst(meta));
     second_pass_status_t ret = SC_SUCCESS;
 
     while (!AssemblyIRIterIsEqual(it , tail) && ret != SC_NO_MEMORY) {
         const char *instr = AssemblyIRGetInstr(it);
-        if (*instr == '3' || *instr == '2') {
-            if (*instr == '2') {
-                ret = ChangeLableToBin(meta, instr + 1 /* skip 2/3*/, it, prev_it);
-            } else {
-                ret = ChangeLableToBin(meta, instr + 1 /* skip 2/3*/, it, prev_prev_it);
-            }
+        if (*instr != '1' && *instr != '0') {
+            ret = ChangeLableToBin(meta, instr, it);
         }
-        prev_prev_it = prev_it;
-        prev_it = it;
         it = AssemblyIRGetNextLine(it);
     }
 
     if (!LoggerIsEmpty(GetLogger(meta)) && ret != SC_NO_MEMORY) {
         return SC_FAIL;
     }
-    
-    return SC_SUCCESS; 
+
+    ret = HandleEntryOutput(meta);
+    if (!LoggerIsEmpty(GetLogger(meta)) && ret != SC_NO_MEMORY) {
+        return SC_FAIL;
+    }
+
+    return ret; 
 }

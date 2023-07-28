@@ -135,6 +135,18 @@ logger_t *GetLogger(as_metadata_t *md);
 
 /*******************************************
 * DESCRIPTION: 
+*    Get the Warning logger from the assembler metadata.
+* 
+* PARAM:
+*     md - Pointer to the assembler metadata.
+* 
+* RETURN:
+*     logger_t* - Pointer to the logger.
+*************************************************************/
+logger_t *GetWarningLogger(as_metadata_t *md);
+
+/*******************************************
+* DESCRIPTION: 
 *     Get the filename associated with the assembler metadata.
 * 
 * PARAM:
@@ -227,5 +239,30 @@ void SetIC(as_metadata_t *md, size_t ic);
 *     void
 *************************************************************/
 void SetDC(as_metadata_t *md, size_t dc);
+
+
+/*******************************************
+* DESCRIPTION: 
+*    eturn the default values that is used as the start value of the pc.
+* 
+* PARAM:
+*     void
+* 
+* RETURN:
+*     The default pc value
+*************************************************************/
+size_t GetDefautPcValue(void);
+
+/*******************************************
+* DESCRIPTION: 
+*     Set the default Program counter values (default is set to 100).
+* 
+* PARAM:
+*     new_val - the new value to set it to. 
+* 
+* RETURN:
+*     void
+*************************************************************/
+void SetDefautPcValue(size_t new_val);
 
 #endif /*__ASSEMBLER_METADATA_H__*/

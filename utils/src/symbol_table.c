@@ -13,6 +13,7 @@
 #include <stdlib.h> /* malloc */
 #include <string.h> /* string function*/
 
+
 struct symbol_table {
     avl_t *tree;
 };
@@ -21,6 +22,11 @@ typedef struct symbol_entry {
     char *symbol;
     size_t line;
 } symbol_entry_t;
+
+typedef struct metadata {
+    void *ptr;
+    action_func_st ac;
+}metadata_t;
 
 /*******************************************
 * DESCRIPTION: 
@@ -68,8 +74,10 @@ static void freeSymbolEntry(void *entry) {
 static int WriteEntryToFile(void *data, void *params) {
     symbol_entry_t *entry = (symbol_entry_t *)data;
     FILE *file = (FILE *)params;
-    
-    fprintf(file, " %s %lu\n", entry->symbol, entry->line);
+    char buffer[MAX_SYMBOL_LENGTH] = {0};
+    memset(buffer, (int)' ', MAX_SYMBOL_LENGTH - 1);
+    strncpy(buffer, entry->symbol, strlen(entry->symbol));
+    fprintf(file, "%s %lu\n", buffer, entry->line);
 
     return 0;
 }
@@ -139,6 +147,28 @@ int64_t SymbolTableLookup(s_table_t *table, char *symbol) {
     return (int64_t)(entry.line); /* -1 */
 }
 
+static int UserFunctionWrapper(void *data, void *extra_params) {
+    metadata_t *user_params = (metadata_t *)extra_params;
+    for_each_data_t dt;
+    symbol_entry_t *entry = (symbol_entry_t *)data;
+    strncpy(dt.label, entry->symbol, sizeof(entry->symbol) + 1);
+    dt.line = entry->line;
+    return (user_params->ac(&dt, user_params->ptr));
+}
+
+s_table_status_t SymbolTableForEach(s_table_t *table, action_func_st ac, 
+                                                                void *param) {
+    metadata_t extra_params;
+    extra_params.ac = ac;
+    extra_params.ptr = param;
+    if (AVL_FAIL == AvlForEach(table->tree, UserFunctionWrapper,
+                                            (void *)&extra_params, INORDER)) {
+        return ST_FAILED;
+    }
+    
+    return ST_SUCCESS;   
+}
+
 
 s_table_status_t SymbolTableConvertToFile(s_table_t *table, 
                                                 const char *filename) {                                            
@@ -164,3 +194,4 @@ s_table_status_t SymbolTableConvertToFile(s_table_t *table,
     
     return ST_SUCCESS;   
 }
+

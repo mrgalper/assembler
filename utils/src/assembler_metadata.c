@@ -11,6 +11,8 @@
 #include <string.h> /* memset */
 #include <stdio.h> /* printf */
 
+static size_t default_pc_val = 100;
+
 struct assembler_metadata_t {
     s_table_t *symbol_table;
     s_table_t *entry_table;
@@ -28,6 +30,7 @@ struct assembler_metadata_t {
     
     macro_table_t *macro_table;
     logger_t *logger;
+    logger_t *warning_logger;
     char *filename;
     FILE* file;
     size_t IC; /* instruction counter */
@@ -69,10 +72,12 @@ as_metadata_t *CreateAssemblerMetadata(const char *filename) {
     md->assembly_IR_data  = CreateAssemblyIR();
     md->macro_table  = CreateMacroTable();
     md->logger       = CreateLogger();
+    md->warning_logger       = CreateLogger();
     if (md->symbol_table == NULL || md->entry_table == NULL || 
         md->extern_table == NULL || md->assembly_IR_data == NULL ||
         md->assembly_IR_instruction == NULL ||
-        md->macro_table == NULL || md->logger == NULL) {
+        md->macro_table == NULL || 
+        md->logger == NULL || md->warning_logger == NULL) {
         DestroyAssemblerMetadata(md);
         fclose(md->file);
         free(md->filename);
@@ -82,7 +87,7 @@ as_metadata_t *CreateAssemblerMetadata(const char *filename) {
     }
     md->IC = 0;
     md->DC = 0;
-    md->PC = 100; /* default start PC counter */
+    md->PC = default_pc_val; /* default start PC counter */
 
     return md;    
 }
@@ -114,6 +119,9 @@ void DestroyAssemblerMetadata(as_metadata_t *md) {
     }
     if (md->logger != NULL) {
         DestroyLogger(md->logger);
+    }
+    if (md->warning_logger != NULL) {
+        DestroyLogger(md->warning_logger);
     }
     fclose(md->file);
     free(md->filename);
@@ -157,6 +165,10 @@ logger_t *GetLogger(as_metadata_t *md) {
     return md->logger;
 }
 
+logger_t *GetWarningLogger(as_metadata_t *md) {
+    return md->warning_logger;
+}
+
 const char *GetFilename(as_metadata_t *md) {
     return md->filename;
 }
@@ -187,4 +199,12 @@ void SetIC(as_metadata_t *md, size_t ic) {
 
 void SetDC(as_metadata_t *md, size_t dc) {
     md->DC = dc;
+}
+
+size_t GetDefautPcValue(void) {
+    return default_pc_val;
+}
+
+void SetDefautPcValue(size_t new_val) {
+    default_pc_val = new_val;
 }

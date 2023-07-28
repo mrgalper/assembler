@@ -9,6 +9,8 @@
 #ifndef __ASSEMBLY_IR_H__
 #define __ASSEMBLY_IR_H__
 
+#include <stddef.h> /* size_t */
+
 typedef struct assembly_IR assembly_IR_t;
 typedef struct assembly_IR_node *assembly_IR_iter_t;
 
@@ -45,7 +47,7 @@ void DestroyAssemblyIR(assembly_IR_t *ir);
 * PARAM:
 *     ir - A valid pointer to the assembly IR.
 *     instr - A pointer to the instruction to be added.
-* 
+*     pc - The address of the instruction to be added.
 * RETURN:
 *     A_ir_status_t - The status of the operation:
 *                     - A_IR_SUCCESS if successful
@@ -53,7 +55,7 @@ void DestroyAssemblyIR(assembly_IR_t *ir);
 * BUGS:
 *      if the pointer is not valid, the result will be undefined
 *******************************************/
-a_ir_status_t AssemblyIRAddInstr(assembly_IR_t *ir, const char *instr);
+a_ir_status_t AssemblyIRAddInstr(assembly_IR_t *ir, const char *instr, size_t pc);
 
 /*******************************************
 * DESCRIPTION: Remove the last instruction from the assembly IR.
@@ -137,12 +139,24 @@ int AssemblyIRIterIsEqual(assembly_IR_iter_t iter1, assembly_IR_iter_t iter);
 *     iter - The iterator pointing to a line in the assembly IR.
 * RETURN:
 *     SUCCESS: The instruction from the iterator.
-*     FAILURE: NULL.(No memory available or the iterator is invalid). 
+*     FAILURE: 
 * BUGS:
 *      if the pointer is not valid, the result will be undefined
 *******************************************/
 const char *AssemblyIRGetInstr(assembly_IR_iter_t iter);
 
+/*******************************************
+* DESCRIPTION: Get the pc from the iterator.
+* 
+* PARAM:
+*     iter - The iterator pointing to a line in the assembly IR.
+* RETURN:
+*     SUCCESS: The pc.
+*     FAILURE: 
+* BUGS:
+*      if the pointer is not valid, the result will be undefined
+*******************************************/
+size_t AssemblyIRGetPc(assembly_IR_iter_t iter);
 /*******************************************
 * DESCRIPTION: Convert the assembly IR to a file with the specified filename.
 * 

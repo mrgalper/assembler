@@ -23,8 +23,7 @@ typedef enum second_pass_error {
 *   Description: This function is used to perform the second pass of the 
 *                assembler.
 *   Input: metadata - the metadata of the assembly.
-*   Output: 
-*   Return:
+*   Return: Fail if not memory or errors else SC_SUCCESS 
 ***********************************************************************/
 second_pass_status_t SecondPass(as_metadata_t *metadata);
 

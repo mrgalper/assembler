@@ -2,6 +2,8 @@
 #include "assembler_metadata.h" /* Metadata api*/
 #include "first_pass.h" /* first pass API*/
 #include "second_pass.h" /* second pass API*/
+#include "output_generator.h" /* The output generator */
+
 #include <stdio.h> /* printf*/
 #include <stdlib.h> /* getenv */
 
@@ -45,6 +47,7 @@ int assembler(const char *filename) {
     if (FS_SUCCESS != st1)
     {
         PrintAllLogs(GetLogger(meta)); 
+        PrintAllLogs(GetWarningLogger(meta)); 
         DestroyAssemblerMetadata(meta);
         if (st1 == FS_NO_MEMORY) {
             return AS_NO_MEMORY;
@@ -59,6 +62,7 @@ int assembler(const char *filename) {
     if (SC_SUCCESS != st2)
     {
         PrintAllLogs(GetLogger(meta)); 
+        PrintAllLogs(GetWarningLogger(meta)); 
         DestroyAssemblerMetadata(meta);
         return (FAILED_SECOND_PASS);
     }
@@ -66,18 +70,19 @@ int assembler(const char *filename) {
         PrintPassOutput(meta);
     }
 
-
-/*
-    output_status_t st3 = convertToBinary(meta);
-    if (AS_SUCCESS != st3)
+    output_status_t st3 = ConvertToBinary(meta);
+    if (OUT_SUCCESS != st3)
     {
+        PrintAllLogs(GetLogger(meta)); 
+        PrintAllLogs(GetWarningLogger(meta)); 
         DestroyAssemblerMetadata(meta);
         return (FAILED_CONVERT_TO_BINARY);
     }
-*/
-
-    PrintAllLogs(GetLogger(meta)); 
+    /* if there were any warning print them*/
+    PrintAllLogs(GetWarningLogger(meta));  
     DestroyAssemblerMetadata(meta);
+
+
     return (AS_SUCCESS);
 }
 

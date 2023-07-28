@@ -24,6 +24,8 @@
         "ctype.h": "c",
         "second_pass.h": "c",
         "assembler_helper.h": "c",
-        "assembly_ir.h": "c"
+        "assembly_ir.h": "c",
+        "symbol_table.h": "c",
+        "output_generator.h": "c"
     }
 }

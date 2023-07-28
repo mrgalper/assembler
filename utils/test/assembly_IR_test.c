@@ -16,7 +16,7 @@ int main() {
     for (int i = 0; i < MAX_INSTRUCTIONS; i++) {
         char instruction[20];
         snprintf(instruction, sizeof(instruction), "INSTR_%d", i);
-        a_ir_status_t status = AssemblyIRAddInstr(ir, instruction);
+        a_ir_status_t status = AssemblyIRAddInstr(ir, instruction, 100);
         if (status != A_IR_SUCCESS) {
             printf("Failed to add instruction\n");
             DestroyAssemblyIR(ir);

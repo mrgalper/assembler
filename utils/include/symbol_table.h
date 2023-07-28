@@ -12,6 +12,8 @@
 #include "stddef.h" /* size_t */
 #include "stdint.h" /* int64_t */
 
+#define MAX_SYMBOL_LENGTH 32 /* 31 + 1*/
+
 typedef struct symbol_table s_table_t;
 
 typedef enum symbol_table_status {
@@ -19,6 +21,18 @@ typedef enum symbol_table_status {
     ST_FAIL_TO_OPEN_FILE = 1,
     ST_FAILED = 2
 } s_table_status_t;
+
+typedef struct for_each_data {
+    char label[MAX_SYMBOL_LENGTH];
+    int64_t line;
+}for_each_data_t;
+
+/*
+    this is a function of you're implemintation , and it return 0 on AVL_SUCCESS
+    else will return a fail.
+    you will get data from the function and params that you pass
+*/
+typedef int(*action_func_st)(for_each_data_t *data, void *params);
 
 /*******************************************
 * DESCRIPTION: 
@@ -85,6 +99,22 @@ void SymbolTableRemove(s_table_t *table, char *symbol);
 *******************************************/
 int64_t SymbolTableLookup(s_table_t *table, char *symbol);
 
+/*******************************************
+* DESCRIPTION: 
+*       Function that will iterate on all values in the entring order and will
+*       active action function with param.
+* PARAM:
+*       table - A pointer to the symbol table.
+*       ac - the action function.
+*       param - optional param to pass to ac can be NULL
+* RETURN:
+*       If the action function returns value other 1 return 
+*       ST_FAIL otherwise ST_SUCCESS.
+* BUGS:
+*       If the provided table pointer or ac is invalid (NULL), the behavior is undefined.
+*******************************************/
+s_table_status_t SymbolTableForEach(s_table_t *table, action_func_st ac, 
+                                                                void *param);
 /*******************************************
 * DESCRIPTION: 
 *       Print the symbol table into the file in a the following format:
