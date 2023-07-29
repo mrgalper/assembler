@@ -12,6 +12,7 @@ Build:
 
 To build the project use the following:
 
+mkdir build
 cd build
 cmake ../
 make 
