@@ -1,7 +1,7 @@
 
 /******************************************************************************
 *   Original Name: macro_table.c                                               *
-*   Name: Mark Galperin                                                        *
+*   Name: Ido Sabach                                                           *
 *   Date: 1.7.23                                                               *
 *   Info: This is the implemntation of the macro table.                        *
 ******************************************************************************/

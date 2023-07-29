@@ -1,6 +1,6 @@
 /*******************************************************************************                 
 *   Orginal Name : ueue.h                                                      *
-*   Name: Mark Galperin                                                        *
+*   Name: Ido Sabach                                                           *
 *   Date 22.6.23                                                               *
 *   Info :Decleration of ADT queue functions this simple queue and was designed*
 *   for minimum space usage.                                                   *

@@ -1,6 +1,6 @@
 /*************************************************************************                 
 *   Orginal Name : second_pass.h                                         *
-*   Name: Mark Galperin                                                  *
+*   Name: Ido Sabach                                                     *
 *   Date : 22.7.23                                                       *
 *   Info : This header containts all the second pass error and the the   *
 *   function .                                                           *

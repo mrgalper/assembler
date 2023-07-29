@@ -1,6 +1,6 @@
 /*************************************************************************                 
 *   Orginal Name : logger.h                                              *
-*   Name: Mark Galperin                                                  *
+*   Name: Ido Sabach                                                     *
 *   Date : 24.6.23                                                       *
 *   Info : This is th looger of the project is used to log all the       *
 *   error and warning from the assembler, and print it back to the user. *

@@ -1,6 +1,6 @@
 /*************************************************************************                 
 *   Orginal Name : output_generator.c                                   *
-*   Name: Mark Galperin                                                  *
+*   Name: Ido Sabach                                                     *
 *   Date : 28.7.23                                                       *
 *   Info : This is the implemntation of the convertion to binary.        *
 *************************************************************************/
@@ -23,7 +23,7 @@ static output_status_t
     }
     strncpy(output_name, base_name, len);
     strncpy(output_name + len, "ext", 4 /* ext + '\0'*/);
-    table_st = SymbolTableConvertToFile(GetEntryOutput(mt), output_name);
+    table_st = SymbolTableConvertToFile(GetExternOutput(mt), output_name);
     if (table_st == ST_FAIL_TO_OPEN_FILE) {
         ret = OUT_COULD_NOT_OPEN_FILE;
     } else if (table_st == ST_FAILED) {
@@ -31,7 +31,7 @@ static output_status_t
     }
 
     strncpy(output_name + len, "ent", 4 /* ent + '\0'*/);
-    table_st = SymbolTableConvertToFile(GetExternOutput(mt), output_name);
+    table_st = SymbolTableConvertToFile(GetEntryOutput(mt), output_name);
     if (table_st == ST_FAIL_TO_OPEN_FILE) {
         ret = OUT_COULD_NOT_OPEN_FILE;
     } else if (table_st == ST_FAILED) {

@@ -1,6 +1,6 @@
 /********************************************************************************                 
 *   Orginal Name : symbol_table.c                                               *
-*   Name: Mark Galperin                                                         *
+*   Name: Ido Sabach                                                            *
 *   Date 24.6.23                                                                *
 *   Info : This is an api for the symbol table ,                                * 
 *          it will use avl for balanced utilizion of lookup and insertion.      *

@@ -1,6 +1,6 @@
 /******************************************************************************
 *   Orginal Name : slist.c                                                    *
-*   Name: Mark Galperin                                                       *
+*   Name: Ido Sabach                                                          *
 *   Date 23.6.23                                                              *
 *   Info : Defenition of ADT Singel Linked List function                      *
 ******************************************************************************/

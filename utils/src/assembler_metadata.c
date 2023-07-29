@@ -1,6 +1,6 @@
 /******************************************************************************
 *   Orginal Name : assembler_metadata.c                                       *
-*   Name: Mark Galperin                                                       *
+*   Name: Ido Sabach                                                          *
 *   Date 23.6.23                                                              *
 *   Info : This file contains all ds that used in the assembler               *
 ******************************************************************************/

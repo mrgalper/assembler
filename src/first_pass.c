@@ -1,6 +1,6 @@
 /*************************************************************************                 
 *   Orginal Name : first_pass.h                                          *
-*   Name: Mark Galperin                                                  *
+*   Name: Ido Sabach                                                     *
 *   Date : 7.7.23                                                        *
 *   Info : This is the implemntation of the first pass                   *
 *************************************************************************/
@@ -519,10 +519,19 @@ static int AddDataStatment(as_metadata_t *md ,size_t *line_number, char *vals) {
 }
 
 static int AddStringStatement(as_metadata_t *md ,size_t *line_number, char *line) {
-    char *str = strtok(RemoveSpace(line), " \n\t\v\r\f,");
+    char *str = RemoveSpace(line);
+    if  ('\"' != str[0]) {
+        if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
+        "[ERROR] : A string must start with '\"'.",
+                                                            *line_number)) {
+            return FS_NO_MEMORY;
+        }
+    }
+    str = strtok(str + 1, "\"");
     if (str == NULL) {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
-        "[ERROR] : An empty string is not allowed in the .string  statment", 
+        "[ERROR] : An empty string is not allowed in the .string \
+         statment or the string isn't doesn't contain enclosing \"", 
                                                             *line_number)) {
             return FS_NO_MEMORY;
         }
@@ -1020,7 +1029,7 @@ static first_pass_status_t AddOpToIR(as_metadata_t *md,
         if (A_IR_SUCCESS != AssemblyIRAddInstr(GetAssemblyIRInst(md), op->op_first, GetPC(md))) {
             return FS_NO_MEMORY;
         }
-        if (A_IR_SUCCESS != AssemblyIRAddInstr(GetAssemblyIRInst(md), op->op_second, GetPC(md))) {
+        if (A_IR_SUCCESS != AssemblyIRAddInstr(GetAssemblyIRInst(md), op->op_second, GetPC(md) + 1)) {
             return FS_NO_MEMORY;
         }
         SetIC(md, GetIC(md) + 2);

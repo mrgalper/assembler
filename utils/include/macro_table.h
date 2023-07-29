@@ -1,6 +1,6 @@
 /**V****************************************************************************
 *   Original Name: macro_table.h                                               *
-*   Name: Mark Galperin                                                       *
+*   Name: Ido Sabach                                                          *
 *   Date: 30.6.23                                                              *
 *   Info: This is a model that will hold all the macros.                       *
 ******************************************************************************/

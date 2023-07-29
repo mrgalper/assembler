@@ -1,7 +1,7 @@
 
 /*************************************************************************                 
 *   Orginal Name : second_pass.h                                         *
-*   Name: Mark Galperin                                                  *
+*   Name: Ido Sabach                                                     *
 *   Date : 22.7.23                                                       *
 *   Info : This is the implemntation of the second pass                  *
 *************************************************************************/
@@ -83,7 +83,7 @@ static second_pass_status_t ConvertLineToOp(as_metadata_t *md, int val,
     return SC_SUCCESS;
 }
 
-static second_pass_status_t FillEntryExternTable(as_metadata_t *mt, 
+static second_pass_status_t FillExternTable(as_metadata_t *mt, 
             label_mt_t label_mt, const char *label , assembly_IR_iter_t it)
 {
     if (label_mt.label == LABEL_EXTERN) {
@@ -111,7 +111,7 @@ static second_pass_status_t ChangeLableToBin(as_metadata_t *mt,
             return SC_NO_MEMORY;
         }
     }
-    if (SC_SUCCESS != FillEntryExternTable(mt, label_mt, label, it)) {
+    if (SC_SUCCESS != FillExternTable(mt, label_mt, label, it)) {
         return SC_NO_MEMORY;
     }
     FillARE(op, label_mt.label);
@@ -127,7 +127,8 @@ static second_pass_status_t ChangeLableToBin(as_metadata_t *mt,
 static int ActionFunc(for_each_data_t *data, void *param) {
     status_and_meta_t *st_and_mt = (status_and_meta_t *)param;
     as_metadata_t *meta = st_and_mt->metadata;
-    if (-1 == SymbolTableLookup(GetSymbolTable(meta), data->label)) {
+    int line = SymbolTableLookup(GetSymbolTable(meta), data->label);
+    if (-1 == line) {
         char msg_err[256] = {0};
         snprintf(msg_err, sizeof(msg_err),
          "[ERROR]: symbol %s defined as entry but no entry was found.", data->label);
@@ -138,7 +139,7 @@ static int ActionFunc(for_each_data_t *data, void *param) {
         return SC_FAIL;
     } else {
         if (ST_FAILED == 
-                SymbolTableInsert(GetEntryOutput(meta), data->label, data->line)) {
+                SymbolTableInsert(GetEntryOutput(meta), data->label, line)) {
             st_and_mt->ret = SC_NO_MEMORY;
 
             return SC_FAIL;

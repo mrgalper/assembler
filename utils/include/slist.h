@@ -1,6 +1,6 @@
 /*******************************************************************************                 
 *   Orginal Name :slist.h                                                      *
-*   Name: Mark Galperin                                                        *
+*   Name: Ido Sabach                                                           *
 *   Reviewer : Ahron Cohen                                                     *
 *   Date 23.6.23                                                               *
 *   Info : Decleration of ADT Singel Linked List function and function pointers*

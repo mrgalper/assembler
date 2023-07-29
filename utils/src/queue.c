@@ -1,6 +1,6 @@
 /*******************************************************************************                 
 *   Orginal Name :queue.c                                                      *
-*   Name: Mark Galperin                                                        *
+*   Name: Ido Sabach                                                           *
 *   Reviewer : Eitan the shark                                                 *
 *   Date 10.6.22                                                               *
 *   Info : Defenition of ADT queue functions, implemented with SLL functions.  *
