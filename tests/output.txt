@@ -1,19 +1,32 @@
-starting assembly for file tests/test1
-finished assembly for file tests/test1
-starting assembly for file tests/2023b-assembler-tests/ok/o1
-finished assembly for file tests/2023b-assembler-tests/ok/o1
-starting assembly for file tests/2023b-assembler-tests/ok/o2
-finished assembly for file tests/2023b-assembler-tests/ok/o2
-starting assembly for file tests/2023b-assembler-tests/warn/w1
-[File: tests/2023b-assembler-tests/warn/w1.as]: Line: 10 Message: [ERROR] : double label definition of LENGTH found, previously defined in line 100 as entry
-[File: tests/2023b-assembler-tests/warn/w1.as]: Line: 11 Message: [ERROR] : .entry label cannot contain more then 1 label
-[File: tests/2023b-assembler-tests/warn/w1.as]: Line: 13 Message: [ERROR] : .extern label cannot contain more then 1 label
-Error in file: tests/2023b-assembler-tests/warn/w1
-finished assembly for file tests/2023b-assembler-tests/warn/w1
-starting assembly for file tests/2023b-assembler-tests/warn/w2.as
-Error in file: tests/2023b-assembler-tests/warn/w2.as
-finished assembly for file tests/2023b-assembler-tests/warn/w2.as
-starting assembly for file tests/2023b-assembler-tests/error/e1
-[File: tests/2023b-assembler-tests/error/e1.as]: Line: 3 Message: [ERROR] : op mov got unsupported addressing type
-Error in file: tests/2023b-assembler-tests/error/e1
-finished assembly for file tests/2023b-assembler-tests/error/e1
+The following file is the output of this command : 
+./assembler ests/ok/o1 tests/ok/o2 tests/ok/o3  tests/warn/w1 tests/warn/w2 tests/error/e1 > tests/output.txt
+
+
+
+
+
+
+
+starting assembly for file tests/ok/o1
+finished assembly for file tests/ok/o1
+starting assembly for file tests/ok/o2
+finished assembly for file tests/ok/o2
+starting assembly for file tests/ok/o3
+finished assembly for file tests/ok/o3
+starting assembly for file tests/warn/w1
+[File: tests/warn/w1.as]: Line: 10 Message: [ERROR] : double label definition of LENGTH found, previously defined  as entry
+[File: tests/warn/w1.as]: Line: 13 Message: [ERROR] : double label definition of W found, previously as extern
+[File: tests/warn/w1.as]: Line: 11 Message: [WARNING] : label defintion before .entry is meaningless
+[File: tests/warn/w1.as]: Line: 13 Message: [WARNING] : label defintion before .extern is meaningless
+Error in file: tests/warn/w1
+finished assembly for file tests/warn/w1
+starting assembly for file tests/warn/w2
+[File: tests/warn/w2.as]: Line: 11 Message: [ERROR] : double label definition of W found, previously as extern
+[File: tests/warn/w2.as]: Line: 9 Message: [WARNING] : label defintion before .entry is meaningless
+[File: tests/warn/w2.as]: Line: 11 Message: [WARNING] : label defintion before .extern is meaningless
+Error in file: tests/warn/w2
+finished assembly for file tests/warn/w2
+starting assembly for file tests/error/e1
+[File: tests/error/e1.as]: Line: 3 Message: [ERROR] : op mov got unsupported addressing type
+Error in file: tests/error/e1
+finished assembly for file tests/error/e1

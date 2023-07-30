@@ -574,8 +574,8 @@ static int IsLabelExists(as_metadata_t *md, char *label,
     int line = SymbolTableLookup(GetSymbolTable(md), label); 
     if (CheckSymbol(checker) && line != -1) {
         snprintf(str, 114,
-        "[ERROR] : double label definition of %s found, previously defined in line %d as label", 
-        label, line);
+        "[ERROR] : double label definition of %s found", 
+        label);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), str, 
                                                                 *line_number)) {
             return FS_NO_MEMORY;
@@ -585,8 +585,8 @@ static int IsLabelExists(as_metadata_t *md, char *label,
     line = SymbolTableLookup(GetEntryTable(md), label); 
     if (CheckEntry(checker) && line != -1) {
         snprintf(str, 114,
-        "[ERROR] : double label definition of %s found, previously defined in line %d as entry", 
-        label, line);
+        "[ERROR] : double label definition of %s found, previously defined as entry", 
+        label);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), str, 
                                                                 *line_number)) {
             return FS_NO_MEMORY;
@@ -596,8 +596,8 @@ static int IsLabelExists(as_metadata_t *md, char *label,
     line = SymbolTableLookup(GetExternTable(md), label); 
     if (CheckExtern(checker) && line != -1) {
         snprintf(str, 114,
-        "[ERROR] : double label definition of %s found, previously defined in line %d as extern", 
-        label, line);
+        "[ERROR] : double label definition of %s found, previously as extern", 
+        label);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), str, 
                                                                 *line_number)) {
             return FS_NO_MEMORY;
@@ -927,7 +927,7 @@ static first_pass_status_t FillOp(as_metadata_t *md, char *line,
 static first_pass_status_t FillInstructionOp(as_metadata_t *md,
                                 size_t *line_number, op_t *op, 
                                 operands_t stored, operands_t actual,
-                                char *cmd, int offset_val)
+                                char *cmd)
 {
     static char *register_str[register_amount] =    
             {"000", "001", "010", "011", "100", "101", "110", "111"}; 
@@ -976,23 +976,23 @@ static first_pass_status_t FillTwoOp(as_metadata_t *md,
                                     op->operand[OP_DEST] == OP_REGISTER) {
         /* offset is set to -1 since both oeprands are registers*/
         ret = FillInstructionOp(md ,line_number, op,
-                                        OP_DEST, OP_DEST, op->op_first, -1);
+                                        OP_DEST, OP_DEST, op->op_first);
         if (ret == FS_NO_MEMORY) {
             return ret;
         } 
         ret = FillInstructionOp(md, line_number, op,
-                                            OP_SRC, OP_SRC, op->op_first, -1);
+                                            OP_SRC, OP_SRC, op->op_first);
         if (ret == FS_NO_MEMORY) {
             return ret;
         } 
     } else {
         ret = FillInstructionOp(md, line_number, op,
-                                            OP_SRC, OP_SRC, op->op_first, 0);
+                                            OP_SRC, OP_SRC, op->op_first);
         if (ret == FS_NO_MEMORY) {
             return ret;
         } 
         ret = FillInstructionOp(md, line_number, op,
-                                            OP_DEST, OP_DEST, op->op_second, 1);
+                                            OP_DEST, OP_DEST, op->op_second);
         if (ret == FS_NO_MEMORY) {
             return ret;
         } 
@@ -1012,7 +1012,7 @@ static first_pass_status_t AddOpToIR(as_metadata_t *md,
         store the val in src but want to put it in dest*/
         FillOperandBin(op, OP_SRC, OP_DEST); 
         ret = FillInstructionOp(md, line_number, op,
-                                        OP_SRC, OP_DEST, op->op_first, 0);
+                                        OP_SRC, OP_DEST, op->op_first);
     } else if (op_amount == 2) {
         FillOperandBin(op, OP_SRC, OP_SRC); 
         FillOperandBin(op, OP_DEST,OP_DEST); 
@@ -1145,8 +1145,9 @@ static int HandleExternLabel(as_metadata_t *md, char *line,
     size_t checker = CHECK_EXTERN | CHECK_ENTRY;
     int line_len = strlen(line);
     char line_copy[MAX_INSTRUCTION_LENGTH] = {0};
-    char *label = GetLabel(md ,line_copy, line_number);
+    char *label = NULL;
     strncpy(line_copy, line, MAX_INSTRUCTION_LENGTH);
+    label = GetLabel(md ,line_copy, line_number);
     if (DEAD_BEEF == label) {
         return FS_NO_MEMORY;
     }else if (NULL != label) {
@@ -1215,8 +1216,9 @@ static int HandleEntryLabel(as_metadata_t *md, char *line,
     size_t checker = CHECK_EXTERN | CHECK_ENTRY;
     int line_len = strlen(line);
     char line_copy[MAX_INSTRUCTION_LENGTH] = {0};
-    char *label = GetLabel(md ,line_copy, line_number);
+    char *label = NULL;
     strncpy(line_copy, line, MAX_INSTRUCTION_LENGTH);
+    label = GetLabel(md ,line_copy, line_number);
     if (DEAD_BEEF == label) {
         return FS_NO_MEMORY;
     }else if (NULL != label) {
