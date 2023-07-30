@@ -1,0 +1,19 @@
+starting assembly for file tests/test1
+finished assembly for file tests/test1
+starting assembly for file tests/2023b-assembler-tests/ok/o1
+finished assembly for file tests/2023b-assembler-tests/ok/o1
+starting assembly for file tests/2023b-assembler-tests/ok/o2
+finished assembly for file tests/2023b-assembler-tests/ok/o2
+starting assembly for file tests/2023b-assembler-tests/warn/w1
+[File: tests/2023b-assembler-tests/warn/w1.as]: Line: 10 Message: [ERROR] : double label definition of LENGTH found, previously defined in line 100 as entry
+[File: tests/2023b-assembler-tests/warn/w1.as]: Line: 11 Message: [ERROR] : .entry label cannot contain more then 1 label
+[File: tests/2023b-assembler-tests/warn/w1.as]: Line: 13 Message: [ERROR] : .extern label cannot contain more then 1 label
+Error in file: tests/2023b-assembler-tests/warn/w1
+finished assembly for file tests/2023b-assembler-tests/warn/w1
+starting assembly for file tests/2023b-assembler-tests/warn/w2.as
+Error in file: tests/2023b-assembler-tests/warn/w2.as
+finished assembly for file tests/2023b-assembler-tests/warn/w2.as
+starting assembly for file tests/2023b-assembler-tests/error/e1
+[File: tests/2023b-assembler-tests/error/e1.as]: Line: 3 Message: [ERROR] : op mov got unsupported addressing type
+Error in file: tests/2023b-assembler-tests/error/e1
+finished assembly for file tests/2023b-assembler-tests/error/e1
