@@ -57,7 +57,7 @@ typedef enum operand_type{
     OP_NOT_EXIST = -1,
     OP_IMMIDIATE =  0,
     OP_DIRECT    =  1,
-    OP_REGISTER  =  2,
+    OP_REGISTER  =  2
 }operand_type_t;
 
 typedef enum op_scope{
@@ -121,8 +121,8 @@ typedef struct op {
 ******************************************************************************/
 static int IsEmptyLine(char *line) {
     size_t length = strlen(line);
-
-    for (size_t i = 0; i < length; i++) {
+    size_t i = 0;
+    for (i = 0; i < length; i++) {
         if (!isspace((unsigned char)line[i])) {
             return 0;
         }
@@ -295,7 +295,8 @@ static opcode_t GetOp(char *op) {
 }
 
 static void FreeLines(const char **lines, size_t size) {
-    for (size_t i = 0; i < size; i++) {
+    size_t i = 0;
+    for (i = 0; i < size; i++) {
         free((void *)lines[i]);
     }
     free((void *)lines);
@@ -303,15 +304,16 @@ static void FreeLines(const char **lines, size_t size) {
 
 static char **CopyLines(as_metadata_t *md, size_t *line_number, size_t *lines) {
     int START_AMOUNT = 2;
-    char **lines_copy = (char **)malloc(sizeof(char *) * START_AMOUNT);
     char **temp = NULL;
+    int i = 0;
+    char curr_line[MAX_INSTRUCTION_LENGTH];
+    char **lines_copy = (char **)malloc(sizeof(char *) * START_AMOUNT);
     if (lines_copy == NULL) {
         return NULL;
     }
-    char curr_line[MAX_INSTRUCTION_LENGTH];
     fgets(curr_line, MAX_INSTRUCTION_LENGTH, GetFile(md));
     ++*line_number;
-    for (int i = 0; strstr(curr_line, "endmcro") == NULL && i < 5; i++) {
+    for (i = 0; strstr(curr_line, "endmcro") == NULL && i < 5; i++) {
         if (i == START_AMOUNT) {
             START_AMOUNT *= 2; /* doubles the size each time like vectors*/
             temp = (char **)realloc(lines_copy, sizeof(char *) * START_AMOUNT);
@@ -343,7 +345,7 @@ static int AddMacro(as_metadata_t *md, const char *label , char **lines,
                                  (const char **)lines, lines_size, 
                                                     line_defined);
     if (ret == MACRO_ALREADY_EXISTS) {
-        char error[200];// MAX_INSTRUCTION_LENGTH + 120 (error message)
+        char error[200];/* MAX_INSTRUCTION_LENGTH + 120 (error message)*/
         macro_table_iter_t it = MacroTableFindEntry(GetMacroTable(md), label);
         size_t prev_defined = MacroTableGetEntryLineDefined(it);
         snprintf(error, 200,
@@ -364,10 +366,11 @@ static int AddMacro(as_metadata_t *md, const char *label , char **lines,
 
 static int IsLabel(char *line) {
     int is_valid = 1;
+    size_t i = 0;
     if (!isupper(line[0]) && !islower(line[0])) {
         return 0; /* label has to start with latter*/
     }
-    for (size_t i = 0; line[i] && is_valid; i++) {
+    for (i = 0; line[i] && is_valid; i++) {
         if (!isupper(line[i]) && !islower(line[i]) && !isdigit(line[i])) {
             is_valid = 0;
         }
@@ -414,6 +417,7 @@ static char *GetLabel(as_metadata_t *md, char *line, size_t *line_number) {
 
 static int ConvertIntToOp(as_metadata_t *md, int val, size_t *line_number) {
     char op[OP_SIZE];
+    size_t i = 0;
     memset(op, (int)'0', OP_SIZE - 1);
     if (val > MAX_INT || val < MIN_INT) {
         if (LG_SUCCESS!= AddLog(GetWarningLogger(md), GetFilename(md), 
@@ -422,7 +426,7 @@ static int ConvertIntToOp(as_metadata_t *md, int val, size_t *line_number) {
         }
     }
     /* -1 because the last one is \0  */
-    for (size_t i = 1; i < OP_SIZE - 1; ++i){
+    for (i = 1; i < OP_SIZE - 1; ++i){
         op[OP_SIZE - i - 1 ] = ((val & 1) ? '1' : '0');
         val >>= 1;
     }
@@ -519,6 +523,7 @@ static int AddDataStatment(as_metadata_t *md ,size_t *line_number, char *vals) {
 }
 
 static int AddStringStatement(as_metadata_t *md ,size_t *line_number, char *line) {
+    size_t i = 0;
     char *str = RemoveSpace(line);
     if  ('\"' != str[0]) {
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
@@ -543,7 +548,7 @@ static int AddStringStatement(as_metadata_t *md ,size_t *line_number, char *line
             return FS_NO_MEMORY;
         }
     }
-    for (size_t i = 0; str[i] != '\0'; i++) {
+    for (i = 0; str[i] != '\0'; i++) {
         ConvertIntToOp(md, (int)str[i], line_number);
     }
     ConvertIntToOp(md, '\0', line_number);
@@ -865,15 +870,15 @@ static first_pass_status_t FillOp(as_metadata_t *md, char *line,
     /* if label len doesnt exist the values is 0 so it will not add nothing*/
     char *section = NULL;
     char operands[OP_TOTAL][MAX_INSTRUCTION_LENGTH];
+    first_pass_status_t ret = FS_SUCCESS;
+    char err_msg[200];
+    int op_amount = 0;
     if (op->label_len != 0) {
         section = strtok(RemoveSpace(line + op->label_len + 1 /* ':' */), 
                                                                " \n\t\v\r\f");
     } else {
         section = strtok(RemoveSpace(line), " \n\t\v\r\f");
     }
-    first_pass_status_t ret = FS_SUCCESS;
-    char err_msg[200];
-    int op_amount = 0;
     op->op_type = GetOp(section);
     if (op->op_type == op_undefined) {
         snprintf(err_msg, sizeof(err_msg),"[ERROR] : %s is Undefined Op.", 
@@ -927,6 +932,7 @@ static first_pass_status_t FillInstructionOp(as_metadata_t *md,
     static char *register_str[register_amount] =    
             {"000", "001", "010", "011", "100", "101", "110", "111"}; 
     static int offset[OP_TOTAL] = {2/* src */, 7/* dest*/};
+    size_t i = 0;
     operand_type_t type = op->operand[stored];
     if (type == OP_IMMIDIATE) {
         int val = op->operand_val[stored].constant;
@@ -941,7 +947,7 @@ static first_pass_status_t FillInstructionOp(as_metadata_t *md,
         if (val < 0) {
             cmd[0] = '1';
         }
-        for (size_t i = 1; i < OP_SIZE - 1 - 2/* ARE */; ++i){
+        for (i = 1; i < OP_SIZE - 1 - 2/* ARE */; ++i){
             cmd[OP_SIZE - i - 1 - 2 /* ARE */] = ((val & 1) ? '1' : '0');
             val >>= 1;
         }
@@ -1139,8 +1145,8 @@ static int HandleExternLabel(as_metadata_t *md, char *line,
     size_t checker = CHECK_EXTERN | CHECK_ENTRY;
     int line_len = strlen(line);
     char line_copy[MAX_INSTRUCTION_LENGTH] = {0};
-    strncpy(line_copy, line, MAX_INSTRUCTION_LENGTH);
     char *label = GetLabel(md ,line_copy, line_number);
+    strncpy(line_copy, line, MAX_INSTRUCTION_LENGTH);
     if (DEAD_BEEF == label) {
         return FS_NO_MEMORY;
     }else if (NULL != label) {
@@ -1209,8 +1215,8 @@ static int HandleEntryLabel(as_metadata_t *md, char *line,
     size_t checker = CHECK_EXTERN | CHECK_ENTRY;
     int line_len = strlen(line);
     char line_copy[MAX_INSTRUCTION_LENGTH] = {0};
-    strncpy(line_copy, line, MAX_INSTRUCTION_LENGTH);
     char *label = GetLabel(md ,line_copy, line_number);
+    strncpy(line_copy, line, MAX_INSTRUCTION_LENGTH);
     if (DEAD_BEEF == label) {
         return FS_NO_MEMORY;
     }else if (NULL != label) {
@@ -1301,6 +1307,8 @@ static int HandleMacroExpension(as_metadata_t *md, char *line, size_t *line_numb
     macro_table_iter_t it = MacroTableFindEntry(GetMacroTable(md), label);
     size_t lines = MacroTableGetEntryNumberOfLines(it);
     const char **macro_lines = MacroTableGetEntryLines(it); 
+    size_t i = 0;
+    line_type_t lt; 
     handler handlers[LINE_TYPE_AMOUNT] = 
                                       {HandleNothing , 
                                        HandleNothing ,
@@ -1310,10 +1318,10 @@ static int HandleMacroExpension(as_metadata_t *md, char *line, size_t *line_numb
                                        HandleMacroDefinition,
                                        HandleEntryLabel,
                                        HandleExternLabel };
-    for (size_t i = 0; i < lines; i++) {
+    for (i = 0; i < lines; i++) {
         char line_copy[MAX_INSTRUCTION_LENGTH];
         strncpy(line_copy, macro_lines[i], MAX_INSTRUCTION_LENGTH);
-        line_type_t lt = GetLineType(md, line_copy);
+        lt = GetLineType(md, line_copy);
         if (lt == LINE_TYPE_MACRO_DEFINITION || lt == LINE_TYPE_MACRO_EXPRESSION) {
             if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
                 "[FATAL_ERROR] : macro expansion or defenition inside a macro expension is not allowed , ",
@@ -1348,10 +1356,9 @@ first_pass_status_t FirstPass(as_metadata_t *md) {
                                        HandleEntryLabel,
                                        HandleExternLabel };
     line_type_t lt = 0;
-    
+    first_pass_status_t ret = FS_SUCCESS;
     assert(md != NULL);
     file = GetFile(md);
-    first_pass_status_t ret = FS_SUCCESS;
     while ((fgets(instruction, MAX_INSTRUCTION_LENGTH - 1 , file) != NULL) && 
                                                          ret != FS_NO_MEMORY) { 
         /* since we use strtok in the GetLineType we ruin the instruction
@@ -1372,3 +1379,4 @@ first_pass_status_t FirstPass(as_metadata_t *md) {
 
     return (ret);
 }
+

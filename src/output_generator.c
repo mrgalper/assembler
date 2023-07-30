@@ -44,16 +44,16 @@ static output_status_t
 static void ConvertToBase64(const char *binaryString, char *base64String) {
     static const char base64_lut[] = 
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
+    int i = 0;
     uint16_t bits = 0;
-    for (int i = 0; i < 12; i++) {
+    for (i = 0; i < 12; i++) {
         bits = (bits << 1) | (binaryString[i] - '0');
     }
 
     base64String[0] = base64_lut[bits >> 6];
     base64String[1] = base64_lut[bits & 0x3F];
 
-    // Null-terminate the base64String
+    
     base64String[2] = '\0';
 }
 
@@ -101,7 +101,7 @@ output_status_t ConvertToBinary(as_metadata_t *mt)
 {
     char *base_name =  NULL;
     output_status_t ret = OUT_SUCCESS;
-    /* after the -2 it will remaine with name. */;
+    /* after the -2 it will remaine with name. */
     size_t len = strlen(GetFilename(mt)) - 2; 
     base_name = (char *)malloc(len + 1);
     if (base_name == NULL) {

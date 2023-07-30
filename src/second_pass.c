@@ -63,7 +63,7 @@ static void FillARE(char *cmd, label_t label_type) {
 
 static second_pass_status_t ConvertLineToOp(as_metadata_t *md, int val, 
                                                 char *cmd, const char *label) {
-    
+    int i = 0;
     if (val > MAX_LANE || val < MIN_LANE) {
         char err_msg[120]= {0};
         snprintf(err_msg, 120, 
@@ -75,7 +75,7 @@ static second_pass_status_t ConvertLineToOp(as_metadata_t *md, int val,
             return SC_NO_MEMORY;
         }
     }
-    for (size_t i = 3; i < MAX_OP_LENGTH - 1; ++i){
+    for (i = 3; i < MAX_OP_LENGTH - 1; ++i){
         cmd[OP_SIZE - i - 1 ] = ((val & 1) ? '1' : '0');
         val >>= 1;
     }

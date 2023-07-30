@@ -19,10 +19,10 @@ void PrintMacroTable(macro_table_t *table) {
         const char **lines = MacroTableGetEntryLines(iter);
         size_t line_count = MacroTableGetEntryNumberOfLines(iter);
         size_t line_defined = MacroTableGetEntryLineDefined(iter);
-
+        size_t i = 0;
         printf("Label: %s\n", label);
         printf("Lines:\n");
-        for (size_t i = 0; i < line_count; i++) {
+        for (i = 0; i < line_count; i++) {
             printf("%s\n", lines[i]);
         }
         printf("Line Defined: %zu\n", line_defined);
@@ -58,10 +58,10 @@ int main(void) {
         const char **lines = MacroTableGetEntryLines(iter);
         size_t line_count = MacroTableGetEntryNumberOfLines(iter);
         size_t line_defined = MacroTableGetEntryLineDefined(iter);
-
+        size_t i = 0;
         printf("Label: %s\n", label);
         printf("Lines:\n");
-        for (size_t i = 0; i < line_count; i++) {
+        for (i = 0; i < line_count; i++) {
             printf("%s\n", lines[i]);
         }
         printf("Line Defined: %zu\n", line_defined);

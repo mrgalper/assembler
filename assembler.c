@@ -10,15 +10,16 @@
 int assembler(const char *filename);
 
 int main(int argc, char *argv[]) {
-
+    int i = 0;
+    assembler_status_t st;
     if (argc <= 1) {
         printf("No files have been given");
         return 0;
     }
 
-    for (int i = 1; i < argc; i++) {
+    for (i = 1; i < argc; i++) {
         printf("starting assembly for file %s\n", argv[i]);
-        assembler_status_t st = assembler(argv[i]);
+        st = assembler(argv[i]);
         if (st != AS_SUCCESS) {
             printf("Error in file: %s\n", argv[i]);
             /* break ? */
@@ -38,12 +39,15 @@ static void PrintPassOutput(as_metadata_t *mt) {
 
 int assembler(const char *filename) { 
     as_metadata_t *meta = NULL;
+    first_pass_status_t st1 = FS_SUCCESS;
+    second_pass_status_t st2 = SC_SUCCESS;
+    output_status_t st3 = OUT_SUCCESS;
     meta = CreateAssemblerMetadata(filename);
     if (NULL == meta)
     {
         return (FAILED_TO_INITIALIZE_META_DATA);
     }
-    first_pass_status_t st1 = FirstPass(meta);
+    st1 = FirstPass(meta);
     if (FS_SUCCESS != st1)
     {
         PrintAllLogs(GetLogger(meta)); 
@@ -57,8 +61,7 @@ int assembler(const char *filename) {
     if (getenv("ASSEMBLY_FIRST_PASS_IR") != NULL) {
         PrintPassOutput(meta);
     }
-
-    second_pass_status_t st2 = SecondPass(meta);
+    st2 = SecondPass(meta);
     if (SC_SUCCESS != st2)
     {
         PrintAllLogs(GetLogger(meta)); 
@@ -69,8 +72,7 @@ int assembler(const char *filename) {
     if (getenv("ASSEMBLY_SECOND_PASS_IR") != NULL) {
         PrintPassOutput(meta);
     }
-
-    output_status_t st3 = ConvertToBinary(meta);
+    st3 = ConvertToBinary(meta);
     if (OUT_SUCCESS != st3)
     {
         PrintAllLogs(GetLogger(meta)); 

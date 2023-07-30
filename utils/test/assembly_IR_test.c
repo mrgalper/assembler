@@ -6,6 +6,7 @@
 #define MAX_INSTRUCTIONS 20 
 
 int main() {
+    int i = 0;
     assembly_IR_t *ir = CreateAssemblyIR();
     if (ir == NULL) {
         printf("Failed to create assembly IR\n");
@@ -13,7 +14,7 @@ int main() {
     }
 
     // Add instructions
-    for (int i = 0; i < MAX_INSTRUCTIONS; i++) {
+    for (i = 0; i < MAX_INSTRUCTIONS; i++) {
         char instruction[20];
         snprintf(instruction, sizeof(instruction), "INSTR_%d", i);
         a_ir_status_t status = AssemblyIRAddInstr(ir, instruction, 100);

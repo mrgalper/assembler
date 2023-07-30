@@ -15,6 +15,10 @@ file(GLOB SOURCES src/*.c utils/src/*.c)
 # Create the executable (assembler binary) in the root of the project directory
 add_executable(assembler assembler.c ${SOURCES})
 
+# Set compiler flags: pedantic, ansi, Wall
+target_compile_options(assembler PRIVATE -pedantic -ansi -Wall)
+set_target_properties(assembler PROPERTIES C_STANDARD 99)
+
 # Move the assembler binary to the project's root directory after building
 add_custom_command(
     TARGET assembler POST_BUILD
