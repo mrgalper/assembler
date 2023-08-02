@@ -1,3 +1,0 @@
-/home/markgs/assembler/build/CMakeFiles/assembler.dir
-/home/markgs/assembler/build/CMakeFiles/edit_cache.dir
-/home/markgs/assembler/build/CMakeFiles/rebuild_cache.dir

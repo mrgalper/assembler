@@ -17,7 +17,7 @@ add_executable(assembler assembler.c ${SOURCES})
 
 # Set compiler flags: pedantic, ansi, Wall
 target_compile_options(assembler PRIVATE -pedantic -ansi -Wall)
-set_target_properties(assembler PROPERTIES C_STANDARD 99)
+set_target_properties(assembler PROPERTIES C_STANDARD 90)
 
 # Move the assembler binary to the project's root directory after building
 add_custom_command(
