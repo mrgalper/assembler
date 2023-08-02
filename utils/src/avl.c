@@ -470,9 +470,9 @@ static node_t *AvlRemoveHelper(avl_t *avl, node_t *node, void *data,
     {
         if (IsLeaf(node))
         {
-            free(node);
             ff((void *)node->data); /* free the internal data */
             free(node->data);
+            free(node);
             node = NULL;
         }
         else if(HasBothChildren(node))

@@ -110,8 +110,8 @@ typedef struct op {
     operand_type_t operand[OP_TOTAL];
     operand_val_t operand_val[OP_TOTAL];
     int8_t label_len;
-    int8_t has_src : 2;
-    int8_t has_dest : 2;
+    int8_t has_src;
+    int8_t has_dest;
 }op_t; 
 
 

@@ -95,7 +95,7 @@ void PrintAllLogs(logger_t *logger) {
 
     while (!QueueIsEmpty(logger->log_queue)) {
         log_entry_t *log_entry = (log_entry_t *)QueuePeek(logger->log_queue);
-        printf("[File: %s]: Line: %zu Message: %s\n", 
+        printf("[File: %s]: Line: %lu Message: %s\n", 
                         log_entry->filename, log_entry->line, log_entry->msg);
         free((void *)log_entry->filename);
         free((void *)log_entry->msg);
