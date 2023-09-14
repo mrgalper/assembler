@@ -654,6 +654,7 @@ static void GetOperand(char *line , op_t *op, operands_t type) {
         op->operand_val[type].reg = register_lut[(int)(line[2] - '0')];
         op->operand[type] = OP_REGISTER;
     }else if (IsLabel(line)) {
+        printf("LABEL_OP %s\n", line);
         memcpy(op->operand_val[type].label, line, strlen(line) + 1); 
         op->operand[type] = OP_DIRECT;
     }else if (IsVal(line, &val)) {
@@ -1074,7 +1075,7 @@ static int HandleMacroDefinition(as_metadata_t *md, char *line,
         GetToMacroEnd(md, line_number);
         return (FS_FAIL);
     }
-    printf("%s/n",label);
+    printf("MMM %s/n",label);
     if (GetOp(label) != op_undefined) {
         if (LG_SUCCESS != AddLog(GetLogger(md) , GetFilename(md) ,
             "[ERROR] : macro label cannot be named same as op", *line_number))
@@ -1220,6 +1221,7 @@ static int HandleEntryLabel(as_metadata_t *md, char *line,
     char *label = NULL;
     strncpy(line_copy, line, MAX_INSTRUCTION_LENGTH);
     label = GetLabel(md ,line_copy, line_number);
+    printf("LABEL entry = %s\n", label);
     if (DEAD_BEEF == label) {
         return FS_NO_MEMORY;
     }else if (NULL != label) {
