@@ -77,7 +77,7 @@ static int WriteEntryToFile(void *data, void *params) {
     char buffer[MAX_SYMBOL_LENGTH] = {0};
     memset(buffer, (int)' ', MAX_SYMBOL_LENGTH - 1);
     strncpy(buffer, entry->symbol, strlen(entry->symbol));
-    fprintf(file, "%s %lu\n", buffer, entry->line);
+    fprintf(file, "%s %u\n", buffer, entry->line);
 
     return 0;
 }

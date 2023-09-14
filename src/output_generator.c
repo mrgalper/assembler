@@ -87,7 +87,7 @@ static output_status_t GenerateBase64ObjFile(as_metadata_t *mt, char *base_name)
         free(output_name);
         return OUT_COULD_NOT_OPEN_FILE;
     }
-    fprintf(file, "%lu %lu\n",GetIC(mt), GetDC(mt));
+    fprintf(file, "%u %u\n",GetIC(mt), GetDC(mt));
     ConvertAssemblyIrToBase64(GetAssemblyIRInst(mt), file);  
     ConvertAssemblyIrToBase64(GetAssemblyIRData(mt), file);  
 

@@ -349,7 +349,7 @@ static int AddMacro(as_metadata_t *md, const char *label , char **lines,
         macro_table_iter_t it = MacroTableFindEntry(GetMacroTable(md), label);
         size_t prev_defined = MacroTableGetEntryLineDefined(it);
         sprintf(error,
-                "[ERROR] : Macro %s already exists, previously defined in %lu", 
+                "[ERROR] : Macro %s already exists, previously defined in %u", 
                                                    label, prev_defined);                                       
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), error, 
                                                             line_defined)) {

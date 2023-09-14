@@ -192,7 +192,7 @@ void AssemblyIRPrintIr(assembly_IR_t *ir) {
     iter = AssemblyIRGetFirstLine(ir);
 
     while (!AssemblyIRIterIsEqual(iter, tail)) {
-        printf("%lu %s\n", AssemblyIRGetPc(iter), AssemblyIRGetInstr(iter));
+        printf("%u %s\n", AssemblyIRGetPc(iter), AssemblyIRGetInstr(iter));
         iter = AssemblyIRGetNextLine(iter);
     }
 
