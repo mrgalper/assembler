@@ -1075,7 +1075,7 @@ static int HandleMacroDefinition(as_metadata_t *md, char *line,
         GetToMacroEnd(md, line_number);
         return (FS_FAIL);
     }
-    printf("MMM %s/n",label);
+    
     if (GetOp(label) != op_undefined) {
         if (LG_SUCCESS != AddLog(GetLogger(md) , GetFilename(md) ,
             "[ERROR] : macro label cannot be named same as op", *line_number))
@@ -1114,7 +1114,7 @@ static int HandleData(as_metadata_t *md, char *line, size_t *line_number)
     if (label == DEAD_BEEF) {
         return (FS_NO_MEMORY);
     }
-    printf("Label data %s\n", label);
+    
     if (label != NULL) {
         size_t checker = CHECK_SYMBOL;
         ret = IsLabelExists(md, label, line_number, checker);
@@ -1222,7 +1222,7 @@ static int HandleEntryLabel(as_metadata_t *md, char *line,
     char *label = NULL;
     strncpy(line_copy, line, MAX_INSTRUCTION_LENGTH);
     label = GetLabel(md ,line_copy, line_number);
-    printf("LABEL entry = %s\n", label);
+    
     if (DEAD_BEEF == label) {
         return FS_NO_MEMORY;
     }else if (NULL != label) {
@@ -1324,7 +1324,7 @@ static int HandleMacroExpension(as_metadata_t *md, char *line, size_t *line_numb
                                        HandleMacroDefinition,
                                        HandleEntryLabel,
                                        HandleExternLabel };
-    printf("LABEL_2 ==== %s\n", label);                                   
+                                      
     for (i = 0; i < lines; i++) {
         char line_copy[MAX_INSTRUCTION_LENGTH];
         strncpy(line_copy, macro_lines[i], MAX_INSTRUCTION_LENGTH);
