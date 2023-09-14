@@ -1,6 +1,6 @@
 /*******************************************************************************
 *   Orginal Name : assembler_metadata.h                                        *
-*   Name: Ido Sabach                                                           *
+*   Name: Ido Sabach maya shohat                                                          *
 *   Date 30.6.23                                                               *
 *   Info : The assembler metadata used to store the information about the      * 
 *   assmebler.                                                                 *

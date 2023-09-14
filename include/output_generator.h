@@ -1,6 +1,6 @@
 /*************************************************************************                 
 *   Orginal Name : output_generator.h                                    *
-*   Name: Ido Sabach                                                     *
+*   Name: Ido Sabach maya shohat                                                    *
 *   Date : 28.7.23                                                       *
 *   Info : This header containts the conversion to binary function       *
 *          error and the the function .                                  *

@@ -1,6 +1,6 @@
 /******************************************************************************
 *   Orginal Name : assembly_IR.h                                               *
-*   Name: Ido Sabach                                                          *
+*   Name: Ido Sabach maya shohat                                                         *
 *   Date 30.6.23                                                              *
 *   Info : This is a model that will hold all the intermidiate                *
 *   representations of the the code.                                          *

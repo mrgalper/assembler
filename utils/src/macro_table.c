@@ -1,7 +1,7 @@
 
 /******************************************************************************
 *   Original Name: macro_table.c                                               *
-*   Name: Ido Sabach                                                           *
+*   Name: Ido Sabach maya shohat                                                          *
 *   Date: 1.7.23                                                               *
 *   Info: This is the implemntation of the macro table.                        *
 ******************************************************************************/

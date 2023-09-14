@@ -1,6 +1,6 @@
 /*************************************************************************                 
 *   Orginal Name : first_pass.h                                          *
-*   Name: Ido Sabach                                                     *
+*   Name: Ido Sabach maya shohat                                                    *
 *   Date : 7.7.23                                                        *
 *   Info : This header containts all the first pass error and the the    *
 *   function .                                                           *

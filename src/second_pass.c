@@ -1,7 +1,7 @@
 
 /*************************************************************************                 
 *   Orginal Name : second_pass.h                                         *
-*   Name: Ido Sabach                                                     *
+*   Name: Ido Sabach maya shohat                                                    *
 *   Date : 22.7.23                                                       *
 *   Info : This is the implemntation of the second pass                  *
 *************************************************************************/

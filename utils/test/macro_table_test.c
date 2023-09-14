@@ -1,6 +1,6 @@
 /******************************************************************************
 *   Original Name: macro_table_tests.c                                         *
-*   Name: Ido Sabach                                                          *
+*   Name: Ido Sabach maya shohat                                                         *
 *   Date: 30.6.23                                                              *
 *   Info: Scalable tests for the macro table API.                              *
 ******************************************************************************/

@@ -1,6 +1,6 @@
 /********************************************************************************                 
 *   Orginal Name : avl.h                                                        *
-*   Name: Ido Sabach                                                            *
+*   Name: Ido Sabach maya shohat                                                           *
 *   Date 24.6.23                                                                *
 *   Info : Api for AVL tree - AVL is a self-balncing tree ,each element can move*
 *   in the tree for the sake of balancing , the balancing happend in O(1) so it *
