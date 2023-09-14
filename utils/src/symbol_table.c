@@ -153,6 +153,7 @@ static int UserFunctionWrapper(void *data, void *extra_params) {
     for_each_data_t dt;
     symbol_entry_t *entry = (symbol_entry_t *)data;
     strncpy(dt.label, entry->symbol, sizeof(entry->symbol) + 1);
+    printf("entry.label %s\n" , entry->symbol);
     printf("dt.label = : %s\n", dt.label);
     dt.line = entry->line;
     return (user_params->ac(&dt, user_params->ptr));
