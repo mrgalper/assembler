@@ -1074,6 +1074,7 @@ static int HandleMacroDefinition(as_metadata_t *md, char *line,
         GetToMacroEnd(md, line_number);
         return (FS_FAIL);
     }
+    printf("%s/n",label);
     if (GetOp(label) != op_undefined) {
         if (LG_SUCCESS != AddLog(GetLogger(md) , GetFilename(md) ,
             "[ERROR] : macro label cannot be named same as op", *line_number))
@@ -1320,6 +1321,7 @@ static int HandleMacroExpension(as_metadata_t *md, char *line, size_t *line_numb
                                        HandleMacroDefinition,
                                        HandleEntryLabel,
                                        HandleExternLabel };
+    printf("LABEL_2 ==== %s\n", label);                                   
     for (i = 0; i < lines; i++) {
         char line_copy[MAX_INSTRUCTION_LENGTH];
         strncpy(line_copy, macro_lines[i], MAX_INSTRUCTION_LENGTH);
@@ -1366,6 +1368,7 @@ first_pass_status_t FirstPass(as_metadata_t *md) {
         /* since we use strtok in the GetLineType we ruin the instruction
            so we pass a acopy of the orginal before it ruined */
         strncpy(instr_cp, instruction, MAX_INSTRUCTION_LENGTH);
+        printf("Line : %s\n", instr_cp);
         lt = GetLineType(md, instruction);
         if (lt != LINE_TYPE_MACRO_DEFINITION) {
             line_number += 1;
