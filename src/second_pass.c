@@ -128,6 +128,7 @@ static int ActionFunc(for_each_data_t *data, void *param) {
     status_and_meta_t *st_and_mt = (status_and_meta_t *)param;
     as_metadata_t *meta = st_and_mt->metadata;
     int line = SymbolTableLookup(GetSymbolTable(meta), data->label);
+    printf("FOr each data %s\n", data->label);
     if (-1 == line) {
         char msg_err[256] = {0};
         sprintf(msg_err, 
