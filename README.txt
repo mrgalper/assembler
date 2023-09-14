@@ -12,10 +12,14 @@ Build:
 
 To build the project use the following:
 
-mkdir build
-cd build
-cmake ../
+way 1 :
 make 
+
+way 2 Optional:
+    mkdir build
+    cd build
+    cmake ../
+    make 
 
 The binary is name assembly.
 

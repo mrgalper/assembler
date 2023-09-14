@@ -1,0 +1,3 @@
+/home/mgalperinx/temp/assembler/CMakeFiles/assembler.dir
+/home/mgalperinx/temp/assembler/CMakeFiles/edit_cache.dir
+/home/mgalperinx/temp/assembler/CMakeFiles/rebuild_cache.dir

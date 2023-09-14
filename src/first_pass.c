@@ -348,7 +348,7 @@ static int AddMacro(as_metadata_t *md, const char *label , char **lines,
         char error[200];/* MAX_INSTRUCTION_LENGTH + 120 (error message)*/
         macro_table_iter_t it = MacroTableFindEntry(GetMacroTable(md), label);
         size_t prev_defined = MacroTableGetEntryLineDefined(it);
-        snprintf(error, 200,
+        sprintf(error,
                 "[ERROR] : Macro %s already exists, previously defined in %lu", 
                                                    label, prev_defined);                                       
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), error, 
@@ -393,7 +393,7 @@ static char *GetLabel(as_metadata_t *md, char *line, size_t *line_number) {
     if (len != og_len) {
         if (len > MAX_LABEL_LENGTH) {
             char error[114];/*  MAX_INSTRUCTION_LENGTH + 30 (error message) */
-            snprintf(error, 114,"[ERROR] : Label too long :%s" , label);
+            sprintf(error, "[ERROR] : Label too long :%s" , label);
             if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
                              "[ERROR] : Label too long", *line_number)) {
                 return DEAD_BEEF;
@@ -573,7 +573,7 @@ static int IsLabelExists(as_metadata_t *md, char *label,
     char str[114] = {0}; /* MAX_INSTRUCTION_LENGTH + MAX_LABEL_LENGTH + 1 */
     int line = SymbolTableLookup(GetSymbolTable(md), label); 
     if (CheckSymbol(checker) && line != -1) {
-        snprintf(str, 114,
+        sprintf(str,
         "[ERROR] : double label definition of %s found", 
         label);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), str, 
@@ -584,7 +584,7 @@ static int IsLabelExists(as_metadata_t *md, char *label,
     }
     line = SymbolTableLookup(GetEntryTable(md), label); 
     if (CheckEntry(checker) && line != -1) {
-        snprintf(str, 114,
+        sprintf(str, 
         "[ERROR] : double label definition of %s found, previously defined as entry", 
         label);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), str, 
@@ -595,7 +595,7 @@ static int IsLabelExists(as_metadata_t *md, char *label,
     }
     line = SymbolTableLookup(GetExternTable(md), label); 
     if (CheckExtern(checker) && line != -1) {
-        snprintf(str, 114,
+        sprintf(str, 
         "[ERROR] : double label definition of %s found, previously as extern", 
         label);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), str, 
@@ -670,10 +670,10 @@ static first_pass_status_t EmitOpTypeError(as_metadata_t *md, char *section,
     char err_msg[200] = {0};
     if (op->operand[op_type] == OP_NOT_EXIST 
             && op->operand_val[OP_DEST].reg == undefined_register) {
-        snprintf(err_msg, sizeof(err_msg), 
+        sprintf(err_msg, 
                 "[ERROR] undefined regsister is used %s" , section);
     } else {
-        snprintf(err_msg, sizeof(err_msg),
+        sprintf(err_msg,
         "[ERROR] : %s Is neither a valid label int or register",
         section);
     }
@@ -761,7 +761,7 @@ static void VerifyOpAmount(as_metadata_t *md, size_t *line_number,
     char msg_err[200] = {0}; 
 
     if (op_amount != op_amount_lut[op->op_type]) {
-        snprintf(msg_err, 200, 
+        sprintf(msg_err, 
                  "[ERROR] : for op %s Expected amount %d but got actually %d\n", 
                     op_str[op->op_type] ,op_amount, op_amount_lut[op->op_type]);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), msg_err, 
@@ -791,7 +791,7 @@ static void CheckAddressingAndEmitError(as_metadata_t *md, size_t *line_number,
     if (dest_type != lut[opcode][0] &&
         dest_type != lut[opcode][1] &&
         dest_type != lut[opcode][2]) {
-        snprintf(msg_err, 200, 
+        sprintf(msg_err, 
         "[ERROR] : op %s got unsupported addressing type" , 
         op_str[op->op_type]);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md), 
@@ -881,7 +881,7 @@ static first_pass_status_t FillOp(as_metadata_t *md, char *line,
     }
     op->op_type = GetOp(section);
     if (op->op_type == op_undefined) {
-        snprintf(err_msg, sizeof(err_msg),"[ERROR] : %s is Undefined Op.", 
+        sprintf(err_msg, "[ERROR] : %s is Undefined Op.", 
                                                                       section);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),err_msg ,
                                                         *line_number)) {
@@ -1179,7 +1179,7 @@ static int HandleExternLabel(as_metadata_t *md, char *line,
     }
     if (strlen(section) >= MAX_LABEL_LENGTH) {
         char msg_err[140] = {0};
-        snprintf(msg_err, sizeof(msg_err),
+        sprintf(msg_err, 
             "[ERROR] : %s Is Too long for a label" , section);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
                                                     msg_err, *line_number)) {
@@ -1250,7 +1250,7 @@ static int HandleEntryLabel(as_metadata_t *md, char *line,
     }
     if (strlen(section) >= MAX_LABEL_LENGTH) {
         char msg_err[140] = {0};
-        snprintf(msg_err, sizeof(msg_err),
+        sprintf(msg_err, 
             "[ERROR] : %s Is Too long for a label" , section);
         if (LG_SUCCESS != AddLog(GetLogger(md), GetFilename(md),
                                                     msg_err, *line_number)) {

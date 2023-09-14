@@ -66,7 +66,7 @@ static second_pass_status_t ConvertLineToOp(as_metadata_t *md, int val,
     int i = 0;
     if (val > MAX_LANE || val < MIN_LANE) {
         char err_msg[120]= {0};
-        snprintf(err_msg, 120, 
+        sprintf(err_msg, 
         "[WARNING] : The label %s was defined in line %d which is to big/small for a 10 bit\n",
         label, val);
         if (LG_SUCCESS!= AddLog(GetWarningLogger(md), GetFilename(md), err_msg, -1)) {
@@ -104,7 +104,7 @@ static second_pass_status_t ChangeLableToBin(as_metadata_t *mt,
     FindLabel(mt, (char *)label, &label_mt);
     if ( LABEL_DONT_EXIST == label_mt.label) {
         char msg_err[120];
-        snprintf(msg_err, 120, 
+        sprintf(msg_err,
         "[ERROR]: label was used %s but not defined", label);
         if (LG_SUCCESS != AddLog(GetLogger(mt), GetFilename(mt), msg_err , 
             AssemblyIRGetPc(it))) {
@@ -130,7 +130,7 @@ static int ActionFunc(for_each_data_t *data, void *param) {
     int line = SymbolTableLookup(GetSymbolTable(meta), data->label);
     if (-1 == line) {
         char msg_err[256] = {0};
-        snprintf(msg_err, sizeof(msg_err),
+        sprintf(msg_err, 
          "[ERROR]: symbol %s defined as entry but no entry was found.", data->label);
         if (LG_SUCCESS != AddLog(GetLogger(meta), GetFilename(meta),msg_err, 
                                                                 data->line)) {

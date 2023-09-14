@@ -16,7 +16,7 @@ int main() {
     // Add instructions
     for (i = 0; i < MAX_INSTRUCTIONS; i++) {
         char instruction[20];
-        snprintf(instruction, sizeof(instruction), "INSTR_%d", i);
+        sprintf(instruction,  "INSTR_%d", i);
         a_ir_status_t status = AssemblyIRAddInstr(ir, instruction, 100);
         if (status != A_IR_SUCCESS) {
             printf("Failed to add instruction\n");
@@ -36,7 +36,7 @@ int main() {
     while (!AssemblyIRIterIsEqual(iter, AssemblyIRGetTail(ir))) {
         if (count % 2 == 0) {
             char instruction[20];
-            snprintf(instruction, sizeof(instruction), "MODIFIED_%d", count);
+            sprintf(instruction, "MODIFIED_%d", count);
             AssemblyIRChangeInstruction(iter, instruction);
         }
         iter = AssemblyIRGetNextLine(iter);
