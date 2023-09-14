@@ -108,13 +108,13 @@ s_table_status_t SymbolTableInsert(s_table_t *table, const char *symbol, size_t 
 {
     symbol_entry_t entry;
     size_t len = strlen(symbol) + 1;
-    printf("len : %d\n ", len);
+    
     assert(table != NULL);
     assert(symbol != NULL);
 
     entry.symbol = (void *)malloc(len * (sizeof(char)));
     entry.symbol = strncpy(entry.symbol, symbol, len);
-    printf("ENTRY : %s\n", entry.symbol);
+    
     entry.line = line;
 
     if (AVL_SUCCESS != AvlInsert(table->tree, &entry, sizeof(entry))) {

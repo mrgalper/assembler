@@ -654,7 +654,6 @@ static void GetOperand(char *line , op_t *op, operands_t type) {
         op->operand_val[type].reg = register_lut[(int)(line[2] - '0')];
         op->operand[type] = OP_REGISTER;
     }else if (IsLabel(line)) {
-        printf("LABEL_OP %s\n", line);
         memcpy(op->operand_val[type].label, line, strlen(line) + 1); 
         op->operand[type] = OP_DIRECT;
     }else if (IsVal(line, &val)) {
