@@ -1370,7 +1370,6 @@ first_pass_status_t FirstPass(as_metadata_t *md) {
         /* since we use strtok in the GetLineType we ruin the instruction
            so we pass a acopy of the orginal before it ruined */
         strncpy(instr_cp, instruction, MAX_INSTRUCTION_LENGTH);
-        printf("Line : %s\n", instr_cp);
         lt = GetLineType(md, instruction);
         if (lt != LINE_TYPE_MACRO_DEFINITION) {
             line_number += 1;
