@@ -1114,6 +1114,7 @@ static int HandleData(as_metadata_t *md, char *line, size_t *line_number)
     if (label == DEAD_BEEF) {
         return (FS_NO_MEMORY);
     }
+    printf("Label data %s\n", label);
     if (label != NULL) {
         size_t checker = CHECK_SYMBOL;
         ret = IsLabelExists(md, label, line_number, checker);
